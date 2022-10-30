@@ -1,0 +1,17 @@
+{
+	"@metadata": {
+		"authors": [
+			"Shadowghost"
+		]
+	},
+	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Erweitert den Parser um die Funktionen <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> und <code>#in</code>.<br/>• <b>DDInsert</b>: Text und Bilder einfügen über Buttons, Text oder DropDownListe. JSButton erzeugen<br/>• <b>NewArticle</b>: Auswahl einer Artikelvorlage für neue Artikel.<br/>• <b>AddWhosOnline</b>: Benutzer in WhosOnline austragen nach Logout, Eintrag im persönlichen Menü erzeugen.<br/>• <b>CacheArray</b>: Array Funktion für Vorlagen - schnell durch Cache.<br/>• <b>Sort2</b>: Erstellen sortierter Listen.",
+	"sgpack-sghtml-image-edit-desc": "Das Icon, um zum Anfang der Seite zu gelangen",
+	"sgpack-sghtml-image-top-desc": "Das Edit Icon",
+	"ddinsert-selecttitle": "[ bitte wählen ]",
+	"newarticle-selecttitle": "[ bitte wählen ]",
+	"addwhosonline-pmenu": "Wer ist online?",
+	"parseradds_link_norel": "#link: rel Attribut fehlt",
+	"parseradds_link_nopage": "#link: Seite fehlt",
+	"parseradds_link_illegalpage": "#link: Ungültiger Seitename",
+	"parseradds_userinfo_illegal": "userinfo: Ungültiger Benutzername"
+}

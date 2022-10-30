@@ -1,0 +1,18 @@
+!! Version 2
+
+# @todo expand
+!! functionhooks
+var
+!! endfunctionhooks
+
+!! test
+#vardefine, #vardefineecho and #var
+!! wikitext
+{{#vardefine: a | Test }}
+"{{#var: a }}"
+"{{#vardefineecho: a | Test 2 }}, {{#var: a }}"
+!! html
+<p>"Test"
+"Test 2, Test 2"
+</p>
+!! end

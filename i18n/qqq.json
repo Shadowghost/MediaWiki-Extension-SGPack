@@ -1,0 +1,17 @@
+{
+	"@metadata": {
+		"authors": [
+			"Shadowghost"
+		]
+	},
+	"sgpack-desc": "Extension description",
+	"sgpack-sghtml-image-edit-desc": "Path to the icon used to jump to the top of the page",
+	"sgpack-sghtml-image-top-desc": "Path to the icon used to edit paragraphs",
+	"ddinsert-selecttitle": "Text shown if something needs to be selected in a dropdown",
+	"newarticle-selecttitle": "Text shown on the template selector when creating a new page",
+	"addwhosonline-pmenu": "Text used for the Who's Online personal menu link",
+	"parseradds_link_norel": "Error message shown if #rel attribute is missing",
+	"parseradds_link_nopage": "Error message shown if #link linked page is missing",
+	"parseradds_link_illegalpage": "Error message shown if #link has an invalid page name",
+	"parseradds_userinfo_illegal": "Error message shown if userinfo was provided with an invalid username"
+}

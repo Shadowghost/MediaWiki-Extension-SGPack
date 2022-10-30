@@ -1,0 +1,15 @@
+{
+	"name": "SGPack",
+	"private": true,
+	"scripts": {
+		"test": "grunt test",
+		"lint": "eslint .",
+		"lint:fix": "eslint --fix ."
+	},
+	"devDependencies": {
+		"eslint-config-wikimedia": "0.22.1",
+		"grunt": "1.5.3",
+		"grunt-banana-checker": "0.9.0",
+		"grunt-eslint": "24.0.0"
+	}
+}

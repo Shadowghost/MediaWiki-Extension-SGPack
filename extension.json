@@ -1,73 +1,109 @@
 {
-    "name": "SGPack",
-    "author": [
-        "Shadowghost"
-    ],
-    "version": "2.0.0",
-    "url": "https://github.com/Shadowghost/SGPack",
-    "descriptionmsg": "Extension pack for StargateWiki",
-    "license-name": "GPL-2.0-or-later",
-    "type": "other",
-    "requires": {
-        "MediaWiki": ">= 1.35.0"
-    },
-    "MessagesDirs": {
-        "SGPack": [
-            "i18n"
-        ]
-    },
-    "AutoloadNamespaces": {
-        "MediaWiki\\Extension\\SGPack\\": "src/"
-    },
-    "ExtensionMessagesFiles": {
-        "SGPackMagic": "SGPack.i18n.php"
-    },
-    "HookHandlers": {
-        "default": {
-            "class": "MediaWiki\\Extension\\SGPack\\Hooks"
-        },
-        "newarticle": {
-            "class": "MediaWiki\\Extension\\SGPack\\NewArticle"
-        },
-        "sghtml": {
-            "class": "MediaWiki\\Extension\\SGPack\\SGHTML"
-        },
-        "whosonline": {
-            "class": "MediaWiki\\Extension\\SGPack\\AddWhosOnline"
-        }
-    },
-    "Hooks": {
-        "ParserFirstCallInit": [
-            "default"
-        ],
-        "BeforePageDisplay": [
-            "sghtml"
-        ],
-        "UserLogout": [
-            "whosonline"
-        ],
-        "PersonalUrls": [
-            "whosonline"
-        ],
-        "AlternateEdit": [
-            "newarticle"
-        ]
-    },
-    "config": {
-        "SGHTMLImageTop": {
-            "value": "/extensions/sgpack/resources/arrow-up-icon.png",
-            "path": false,
-            "description": "The icon for getting to the top of the site",
-            "descriptionmsg": "sgpack-sghtml-image-top-desc",
-            "public": true
-        },
-        "SGHTMLImageEdit": {
-            "value": "/extensions/sgpack/resources/pencil-edit-icon.png",
-            "path": false,
-            "description": "The edit icon",
-            "descriptionmsg": "sgpack-sghtml-image-edit-desc",
-            "public": true
-        }
-    },
-    "manifest_version": 2
+	"name": "SGPack",
+	"author": [
+		"René Raule",
+		"Shadowghost"
+	],
+	"version": "2.0.0",
+	"url": "https://github.com/Shadowghost/SGPack",
+	"descriptionmsg": "sgpack-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.38.0"
+	},
+	"MessagesDirs": {
+		"SGPack": [
+			"i18n"
+		]
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\SGPack\\": "includes/"
+	},
+	"ExtensionMessagesFiles": {
+		"SGPackMagic": "SGPack.i18n.magic.php"
+	},
+	"HookHandlers": {
+		"default": {
+			"class": "MediaWiki\\Extension\\SGPack\\Hooks"
+		},
+		"newarticle": {
+			"class": "MediaWiki\\Extension\\SGPack\\NewArticle"
+		},
+		"sghtml": {
+			"class": "MediaWiki\\Extension\\SGPack\\SGHTML"
+		},
+		"whosonline": {
+			"class": "MediaWiki\\Extension\\SGPack\\AddWhosOnline"
+		}
+	},
+	"Hooks": {
+		"ParserFirstCallInit": [
+			"default"
+		],
+		"BeforePageDisplay": [
+			"sghtml"
+		],
+		"UserLogout": [
+			"whosonline"
+		],
+		"PersonalUrls": [
+			"whosonline"
+		],
+		"EditPage::showEditForm:initial": [
+			"newarticle"
+		]
+	},
+	"MediaHandlers": {
+		"audio/aac": "AudioPlayer,",
+		"audio/flac": "AudioPlayer,",
+		"audio/mp3": "AudioPlayer",
+		"audio/mpeg": "AudioPlayer",
+		"audio/wav": "AudioPlayer,"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources/ext.SGPack",
+		"remoteExtPath": "SGPack/resources/ext.SGPack"
+	},
+	"ResourceModules": {
+		"ext.sgPack": {
+			"dependencies": [
+				"jquery.textSelection"
+			],
+			"scripts": [
+				"index.js"
+			],
+			"targets": [
+				"desktop"
+			]
+		},
+		"ext.sgPack.styles": {
+			"dependencies": [
+				"jquery.textSelection"
+			],
+			"styles": [
+				"styles.css"
+			],
+			"targets": [
+				"desktop"
+			]
+		}
+	},
+	"config": {
+		"SGHTMLImageTop": {
+			"value": "/extensions/SGPack/resources/arrow-up-icon.png",
+			"path": false,
+			"description": "The icon for getting to the top of the site",
+			"descriptionmsg": "sgpack-sghtml-image-top-desc",
+			"public": true
+		},
+		"SGHTMLImageEdit": {
+			"value": "/extensions/SGPack/resources/pencil-edit-icon.png",
+			"path": false,
+			"description": "The edit icon",
+			"descriptionmsg": "sgpack-sghtml-image-edit-desc",
+			"public": true
+		}
+	},
+	"manifest_version": 2
 }
