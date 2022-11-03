@@ -16,7 +16,13 @@ use Xml;
 
 class NewArticle {
 
-	// Filter article, noinclude remove
+	/**
+	 * Filter article, noinclude remove
+	 *
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	private static function filterPage( $text ) {
 		$replace = '$1$2';
 		// <noinclude> - remove everything inbetween
@@ -28,10 +34,15 @@ class NewArticle {
 		return $text;
 	}
 
+	/**
+	 * @param EditPage $editPage
+	 * @param OutputPage $output
+	 *
+	 * @return true
+	 */
 	public static function onEditPage__showEditForm_initial( $editPage, $output ) {
 		$parser = MediaWikiServices::getInstance()->getParser();
 		$title = $output->getTitle();
-		$request = $output->getRequest();
 
 		// Check if new article
 		if ( !$title->exists() ) {

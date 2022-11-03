@@ -15,7 +15,14 @@ use Title;
 use User;
 
 class ParserAdds {
-
+	/**
+	 * @param Parser &$parser
+	 * @param string $rel
+	 * @param string $page
+	 * @param string title
+	 *
+	 * @return string
+	 */
 	public static function sgPackLink( &$parser, $rel = '', $page = '', $title = '' ) {
 		global $wgOut;
 
@@ -42,13 +49,17 @@ class ParserAdds {
 		return '';
 	}
 
-	/* in - ermittelt ob ein oder mehrere Werte in einer Menge enthalten sind
-	 * $element: Wert(e) die gesucht werden. Mehrere Werte müssen durch $trenn getrennt werden
-	 * $menge: Menge von Elementen, getrennt durch $trenn
-	 * $trenn: Trennzeichen, default = ','
-	 * $modus: Art der Suche. 'a' - Alle Elemente, 'e' - Ein Element
-	 * $result: Rückgabe bei Erfolg bzw. Misserfolg durch $trenn getrennt
-	 * Rückgabe: Gefundene Elemente oder Leer
+	/**
+	 * in - ermittelt ob ein oder mehrere Werte in einer Menge enthalten sind
+	 *
+	 * @param Parser &$parser
+	 * @param string $element Wert(e) die gesucht werden. Mehrere Werte müssen durch $trenn getrennt werden
+	 * @param string $menge Menge von Elementen, getrennt durch $trenn
+	 * @param string $trenn Trennzeichen, default = ','
+	 * @param string $modus Art der Suche. 'a' - Alle Elemente, 'e' - Ein Element
+	 * @param string $result Rückgabe bei Erfolg bzw. Misserfolg durch $trenn getrennt
+	 *
+	 * @return string Gefundene Elemente oder Leer
 	 */
 	public static function sgPackIn( &$parser, $element = '', $menge = '', $trenn = ',', $modus = 'a', $result = '' ) {
 		// Parameter prüfen
@@ -106,19 +117,31 @@ class ParserAdds {
 		return [ $back, 'noparse' => true ];
 	}
 
-	// trim
-	public static function sgPackTrim( &$parser, $inStr = '' ) {
-		return [ trim( $inStr ), 'noparse' => true ];
+	/**
+	 * @param Parser &$parser
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	public static function sgPackTrim( &$parser, $text = '' ) {
+		return [ trim( $text ), 'noparse' => true ];
 	}
 
-	public static function sgPackTOCMod( &$parser, $inPara = '', $default = 'set' ) {
+	/**
+	 * @param Parser &$parser
+	 * @param string $arg
+	 * @param string $text
+	 *
+	 * @return array
+	 */
+	public static function sgPackTOCMod( &$parser, $arg = '', $default = 'set' ) {
 		$parser->getOutput()->updateCacheExpiry( 0 );
 		$back = '';
-		if ( empty( $inPara ) ) {
-			$inPara = $default;
+		if ( empty( $arg ) ) {
+			$arg = $default;
 		}
 
-		$arPara = explode( ',', $inPara );
+		$arPara = explode( ',', $arg );
 		foreach ( $arPara as $para ) {
 			switch ( strtolower( $para ) ) {
 				case 'no':
@@ -150,11 +173,18 @@ class ParserAdds {
 		return [ $back, 'found' => true ];
 	}
 
-	public static function sgPackUserInfo( &$parser, $inStr = 'name', $inPara = '' ) {
+	/**
+	 * @param Parser &$parser
+	 * @param string $arg
+	 * @param string $param
+	 *
+	 * @return array
+	 */
+	public static function sgPackUserInfo( &$parser, $arg = 'name', $param = '' ) {
 		$parser->getOutput()->updateCacheExpiry( 0 );
 		$back = '';
 		$user = RequestContext::getMain()->getUser();
-		switch ( strtolower( $inStr ) ) {
+		switch ( strtolower( $arg ) ) {
 			case 'name':
 				$back = $user->getName();
 				break;
@@ -165,8 +195,8 @@ class ParserAdds {
 				$back = $user->getRealName();
 				break;
 			case 'email':
-				if ( !empty( $inPara ) ) {
-					$user = User::NewFromName( $inPara );
+				if ( !empty( $param ) ) {
+					$user = User::NewFromName( $param );
 					if ( $user === false ) {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
@@ -177,8 +207,8 @@ class ParserAdds {
 				$back = $user->getSkin()->skinname;
 				break;
 			case 'home':
-				if ( !empty( $inPara ) ) {
-					$user = User::NewFromName( $inPara );
+				if ( !empty( $param ) ) {
+					$user = User::NewFromName( $param );
 					if ( $user === false ) {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
@@ -186,8 +216,8 @@ class ParserAdds {
 				$back = '[[' . $user->getUserPage()->getFullText() . ']]';
 				break;
 			case 'talk':
-				if ( !empty( $inPara ) ) {
-					$user = User::NewFromName( $inPara );
+				if ( !empty( $param ) ) {
+					$user = User::NewFromName( $param );
 					if ( $user === false ) {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
@@ -198,15 +228,15 @@ class ParserAdds {
 				$back = implode( ",", $user->getGroups() );
 				break;
 			case 'group':
-				$back = in_array( $inPara, $user->getGroups() ) ? $inPara : '';
+				$back = in_array( $param, $user->getGroups() ) ? $param : '';
 				break;
 			case 'browser':
 				$back = $_SERVER['HTTP_USER_AGENT'];
-				if ( !empty( $inPara ) ) {
-					if ( false === strpos( $back, $inPara ) ) {
+				if ( !empty( $param ) ) {
+					if ( false === strpos( $back, $param ) ) {
 						$back = '';
 					} else {
-						$back = $inPara;
+						$back = $param;
 					}
 				}
 				break;
@@ -217,7 +247,7 @@ class ParserAdds {
 					$res = $dbr->newSelectQueryBuilder()
 						->select( [ 'count(*)' ] )
 						->from( 'online' )
-						->where( [ 'username' => $inPara ] )
+						->where( [ 'username' => $param ] )
 						->caller( __METHOD__ )
 						->fetchField();
 					$back = $res == '1' ? 'online' : 'offline';
@@ -230,17 +260,19 @@ class ParserAdds {
 		return [ $back, 'noparse' => true ];
 	}
 
-	/* Vorlage mehrfach aufrufen
+	/**
+	 * Vorlage mehrfach aufrufen
 	 * Alle Ausdrücke in () werden an die Vorlage "calltemplate" übergeben.
 	 * Weitere Parameter "callparameter" werden ebenfalls übergeben.
 	 * Ausdrücke in [[]] werden nicht beachtet
-	*/
-	public static function sgPackRecursive() {
-		$p = func_get_args();
-		$parser = $p[0];
-		$calltemplate = $p[1] ?? '';
-		$parstext = $p[2] ?? '';
-
+	 *
+	 * @param Parser $parser
+	 * @param string $calltemplate
+	 * @param string $text
+	 *
+	 * @return array
+	 */
+	public static function sgPackRecursive( $parser, $calltemplate = '', $text = '' ) {
 		// Weitere Übergabeparameter vorbereiten
 		$callparameter = '';
 		$i = 3;
@@ -252,7 +284,7 @@ class ParserAdds {
 		$output = '';
 
 		// Text aufspalten in geklammerte und nicht geklammerte Teile, Elemente in [[]] werden nicht beachtet
-		$split = preg_split( '/(\[\[.*?\]\]|\(.*?\))/i', $parstext, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
+		$split = preg_split( '/(\[\[.*?\]\]|\(.*?\))/i', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
 
 		// Alle Elemente parsen
 		foreach ( $split as $para ) {

@@ -13,6 +13,10 @@ use MediaWiki\Hook\BeforePageDisplayHook;
 class SGHTML implements
 	BeforePageDisplayHook
 {
+	/**
+	 * @param OutPage $out
+	 * @param Skin $skin
+	 */
 	public function onBeforePageDisplay( $out, $skin ): void {
 		global $wgSGHTMLImageTop, $wgSGHTMLImageEdit;
 

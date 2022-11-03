@@ -15,10 +15,21 @@ use WikiPage;
 
 class CacheArray {
 
+	/**
+	 * @var array
+	 */
 	private static $cache = [];
+
+	/**
+	 * @var string
+	 */
 	private static $keyDelimiter = '_';
 
-	// Combine keys
+	/**
+	 * @param array $param
+	 *
+	 * @return string
+	 */
 	public static function sgPackKeys() {
 		// Get the parser parameter
 		$param = func_get_args();
@@ -59,7 +70,11 @@ class CacheArray {
 		return $key;
 	}
 
-	// CacheArray main part
+	/**
+	 * @param array $param
+	 *
+	 * @return array
+	 */
 	public static function sgPackCacheArray() {
 		// Minimum parser, cachenumber and action are needed
 		if ( func_num_args() < 3 ) {

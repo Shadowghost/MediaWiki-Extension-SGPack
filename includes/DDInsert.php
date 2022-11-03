@@ -9,13 +9,18 @@
 namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\MediaWikiServices;
-use Parser;
-use PPFrame;
 
 class DDInsert {
-
+	/**
+	 * @var array
+	 */
 	private static $ddIBlock = [];
 
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	public static function sgpEncode( $text ) {
 		$encoded = '';
 		$length = mb_strlen( $text );
@@ -25,8 +30,17 @@ class DDInsert {
 		return $encoded;
 	}
 
-	// JSButton - just for normal use in page
-	public static function JSButton( $input, array $args, Parser $parser, PPFrame $frame ) {
+	/**
+	 * JSButton - just for normal use in page
+	 *
+	 * @param string $input
+	 * @param array $args
+	 * @param Parser $parser
+	 * @param PPFrame $frame
+	 *
+	 * @return string
+	 */
+	public static function JSButton( $input, $args, $parser, $frame ) {
 		$param = 'type="button"';
 		$param .= isset( $args['name'] ) ? ' name = "' . $args['name'] . '"' : ' name = "jsbutton"';
 		$param .= isset( $args['id'] ) ? ' id = "' . $args['id'] . '"' : '';
@@ -39,8 +53,17 @@ class DDInsert {
 		return '<button ' . $param . '>' . $parser->recursiveTagParse( $input, $frame ) . '</button>';
 	}
 
-	// Button
-	public static function ddIButton( $input, array $args, Parser $parser, PPFrame $frame ) {
+	/**
+	 * Button
+	 *
+	 * @param string $input
+	 * @param array $args
+	 * @param Parser $parser
+	 * @param PPFrame $frame
+	 *
+	 * @return string
+	 */
+	public static function ddIButton( $input, $args, $parser, $frame ) {
 		// If no show parameter is given use input also as showText
 		$show = isset( $args['show'] ) ? htmlspecialchars( $args['show'] ) : $input;
 		// Get sampleText if given
@@ -71,8 +94,17 @@ class DDInsert {
 		return $output;
 	}
 
-	// <ddselect title="titleText" size="sizeInt" name="nameText">...</ddselect>
-	public static function ddISelect( $input, array $args, Parser $parser, PPFrame $frame ) {
+	/**
+	 * <ddselect title="titleText" size="sizeInt" name="nameText">...</ddselect>
+	 *
+	 * @param string $input
+	 * @param array $args
+	 * @param Parser $parser
+	 * @param PPFrame $frame
+	 *
+	 * @return string
+	 */
+	public static function ddISelect( $input, $args, $parser, $frame ) {
 		self::$ddIBlock = [ 'size' => 1, 'name' => 'DDSelect-' . mt_rand(), 'title' => wfMessage( 'ddinsert-selecttitle' ), 'pwidth' => 0, 'pheight' => 1, 'values' => [] ];
 		if ( isset( $args['title'] ) ) {
 			self::$ddIBlock['title'] = $args['title'];
@@ -87,8 +119,17 @@ class DDInsert {
 		return self::ddIOutput();
 	}
 
-	// <ddvalue show="showText" sample="sampleText" picture="name">value</ddvalue>
-	public static function ddIValue( $input, array $args, Parser $parser, PPFrame $frame ) {
+	/**
+	 * <ddvalue show="showText" sample="sampleText" picture="name">value</ddvalue>
+	 *
+	 * @param string $input
+	 * @param array $args
+	 * @param Parser $parser
+	 * @param PPFrame $frame
+	 *
+	 * @return string
+	 */
+	public static function ddIValue( $input, $args, $parser, $frame ) {
 		// If no show parameter is given use input also as showText
 		$show = $args['show'] ?? $input;
 		// Get sampleText if given
@@ -118,7 +159,11 @@ class DDInsert {
 		return '';
 	}
 
-	// Create Output
+	/**
+	 * Create Output
+	 *
+	 * @return string
+	 */
 	public static function ddIOutput() {
 		$output = '';
 		$output .= '<select size="' . self::$ddIBlock['size'] . '" name="' . self::$ddIBlock['name'] . '"';
@@ -135,7 +180,15 @@ class DDInsert {
 		return $output;
 	}
 
-	// Create option line
+	/**
+	 * Create option line
+	 *
+	 * @param string $text
+	 * @param array $value
+	 * @param string $image
+	 *
+	 * @return string
+	 */
 	public static function ddILine( $text, $value, $image ) {
 		if ( self::$ddIBlock['pwidth'] > 0 ) {
 			if ( !empty( $image ) ) {

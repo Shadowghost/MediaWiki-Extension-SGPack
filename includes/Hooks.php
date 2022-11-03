@@ -14,6 +14,9 @@ use Parser;
 class Hooks implements
 	ParserFirstCallInitHook
 {
+	/**
+	 * @param Parser $parser
+	 */
 	public function onParserFirstCallInit( $parser ): void {
 		$parser->setHook( 'jsbutton', [ DDInsert::class, 'JSButton' ] );
 		$parser->setHook( 'ddselect', [ DDInsert::class, 'ddISelect' ] );

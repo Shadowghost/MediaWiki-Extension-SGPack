@@ -9,17 +9,54 @@
 namespace MediaWiki\Extension\SGPack;
 
 class Sort2 {
-
+	/**
+	 * @var Parser
+	 */
 	var $parser;
+
+	/**
+	 * @var string
+	 */
 	var $order;
+
+	/**
+	 * @var string
+	 */
 	var $type;
+
+	/**
+	 * @var string
+	 */
 	var $separator;
+
+	/**
+	 * @var string
+	 */
 	var $casesense;
+
+	/**
+	 * @var string
+	 */
 	var $style;
+
+	/**
+	 * @var string
+	 */
 	var $start;
+
+	/**
+	 * @var string
+	 */
 	var $title;
+
+	/**
+	 * @var string
+	 */
 	var $allowStyles;
 
+	/**
+	 * @param Parser &$parser
+	 */
 	function __construct( &$parser ) {
 		$this->parser = &$parser;
 		$this->order = 'asc';
@@ -31,13 +68,24 @@ class Sort2 {
 		$this->title = "";
 	}
 
-	public static function sgPackRenderSort( $input, array $args, $parser, $frame ) {
+	/**
+	 * @param string $input
+	 * @param array $args
+	 * @param Parser $parser
+	 * @param PPFrame $frame
+	 *
+	 * @return string
+	 */
+	public static function sgPackRenderSort( $input, $args, $parser, $frame ) {
 		$sorter2 = new Sort2( $parser );
 		$sorter2->loadSettings( $args );
 		return $sorter2->sortToHtml( $input );
 	}
 
-	private function loadSettings( $settings ) {
+	/**
+	 * @param array $settings
+	 */
+	private function loadSettings( $settings ): void {
 		if ( isset( $settings['order'] ) ) {
 			$o = strtolower( $settings['order'] );
 			if ( $o == 'asc' || $o == 'desc' || $o == 'none' ) {
@@ -67,6 +115,11 @@ class Sort2 {
 		}
 	}
 
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	private function sortToHtml( $text ) {
 		$lines = $this->internalSort( $text );
 		$list = $this->makeList( $lines );
@@ -74,6 +127,11 @@ class Sort2 {
 		return $html;
 	}
 
+	/**
+	 * @param string $text
+	 *
+	 * @return array
+	 */
 	private function internalSort( $text ) {
 		$lines = explode( "\n", $text );
 		$inter = [];
@@ -96,17 +154,32 @@ class Sort2 {
 		return array_keys( $inter );
 	}
 
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	private function stripWikiTokens( $text ) {
 		$find = [ '[', '{', '\'', '}', ']' ];
 		return trim( str_replace( $find, '', $text ) );
 	}
 
-	private function stripWikiListTokens( string $text ) {
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	private function stripWikiListTokens( $text ) {
 		$find = [ '*', '#', ':' ];
 		return trim( str_replace( $find, '', $text ) );
 	}
 
-	private function makeList( array $lines ) {
+	/**
+	 * @param array $lines
+	 *
+	 * @return string
+	 */
+	private function makeList( $lines ) {
 		$list = [];
 		$listtoken = "<li>";
 		$endlisttoken = "</li>";
@@ -159,6 +232,11 @@ class Sort2 {
 		return $this->title . implode( $this->separator, $list );
 	}
 
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	private function parse( $text ) {
 		$title = &$this->parser->mTitle;
 		$options = &$this->parser->mOptions;

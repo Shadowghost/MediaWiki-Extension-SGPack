@@ -12,7 +12,13 @@ use SpecialPage;
 use Title;
 
 class AddWhosOnline {
-
+	/**
+	 * @param array &$personal_urls
+	 * @param Title $title
+	 * @param SkinTemplate $skin
+	 *
+	 * @return true
+	 */
 	public function onPersonalUrls( &$personal_urls, $title, $skin ) {
 		// Title of the WhosOnline specialpage
 		$sp = Title::makeTitle( NS_SPECIAL, 'WhosOnline' );
@@ -28,6 +34,11 @@ class AddWhosOnline {
 		return true;
 	}
 
+	/**
+	 * @param User &$user
+	 *
+	 * @return true
+	 */
 	public function onUserLogout( &$user ) {
 		global $wgDBname;
 
