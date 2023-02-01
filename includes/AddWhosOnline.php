@@ -13,23 +13,25 @@ use Title;
 
 class AddWhosOnline {
 	/**
-	 * @param array &$personal_urls
-	 * @param Title $title
-	 * @param SkinTemplate $skin
+	 * @param SkinTemplate $sktemplate
+	 * @param array &$links
 	 *
 	 * @return true
 	 */
-	public function onPersonalUrls( &$personal_urls, $title, $skin ) {
+	public function onSkinTemplateNavigation__Universal( $sktemplate, array &$links ) {
+		$title = $sktemplate->getTitle();
 		// Title of the WhosOnline specialpage
 		$sp = Title::makeTitle( NS_SPECIAL, 'WhosOnline' );
-		if (
-			$title->getNamespace() != NS_SPECIAL
-			|| SpecialPage::getTitleFor( 'WhosOnline', false )->getText() != $title->getText()
-		) {
-			// Be sure we are not on the specialpage
-			$a['online'] = [ 'text' => wfMessage( 'addwhosonline-pmenu' )->text(), 'href' => $sp->getLocalURL() ];
-			// Place new item(s) on second last position
-			array_splice( $personal_urls, -1, 0, $a );
+		// Be sure we are not on the specialpage
+		if ($title->getNamespace() != NS_SPECIAL || SpecialPage::getTitleFor( 'WhosOnline', false )->getText() != $title->getText()) {
+			$usermenu = $links['user-menu'];
+			$a['online'] = [
+				'class' => '',
+				'href' => $sp->getLocalURL(),
+				'text' => wfMessage( 'addwhosonline-pmenu' )->text()
+			];
+			// Place new item on second last position
+			$links['user-menu'] = array_slice($usermenu, 0, count( $usermenu ) - 1, true) + $a + array_slice($usermenu, -1, true);
 		}
 		return true;
 	}

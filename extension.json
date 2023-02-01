@@ -47,7 +47,7 @@
 		"UserLogout": [
 			"whosonline"
 		],
-		"PersonalUrls": [
+		"SkinTemplateNavigation::Universal": [
 			"whosonline"
 		],
 		"EditPage::showEditForm:initial": [
