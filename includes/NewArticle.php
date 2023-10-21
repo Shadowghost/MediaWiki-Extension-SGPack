@@ -14,7 +14,8 @@ use Title;
 use WikiPage;
 use Xml;
 
-class NewArticle {
+class NewArticle
+{
 
 	/**
 	 * Filter article, noinclude remove
@@ -23,14 +24,15 @@ class NewArticle {
 	 *
 	 * @return string
 	 */
-	private static function filterPage( $text ) {
+	private static function filterPage($text)
+	{
 		$replace = '$1$2';
 		// <noinclude> - remove everything inbetween
 		$expr = '/(.*)<noinclude>(?s).*<\/noinclude>(.*)/';
-		$text = preg_replace( $expr, $replace, $text );
+		$text = preg_replace($expr, $replace, $text);
 		// <includeonly> - remove tags only
 		$expr = '/(.*)<includeonly>|<\/includeonly>(.*)/';
-		$text = preg_replace( $expr, $replace, $text );
+		$text = preg_replace($expr, $replace, $text);
 		return $text;
 	}
 
@@ -40,58 +42,59 @@ class NewArticle {
 	 *
 	 * @return true
 	 */
-	public static function onEditPage__showEditForm_initial( $editPage, $output ) {
+	public static function onEditPage__showEditForm_initial($editPage, $output)
+	{
 		$parser = MediaWikiServices::getInstance()->getParser();
 		$title = $output->getTitle();
 
 		// Check if new article
-		if ( !$title->exists() ) {
+		if (!$title->exists()) {
 			// Load control page "MediaWiki:NewArticle-NS"
-			$page = WikiPage::factory( Title::makeTitle( 8, 'NewArticle-' . $title->getNamespace() ) );
+			$page = WikiPage::factory(Title::makeTitle(8, 'NewArticle-' . $title->getNamespace()));
 			$content = $page->getContent();
 			// Check if something is loaded
-			if ( !empty( $content ) ) {
+			if (!empty($content)) {
 				// Init buffer
 				$html = '';
 				$idNr = 0;
 				// Seite parsen
-				$text = $parser->parse( $content->getNativeData(), $page->getTitle(), new ParserOptions( $output->getUser() ) );
+				$text = $parser->parse($content->getNativeData(), $page->getTitle(), new ParserOptions($output->getUser()));
 				// Definition der Auswahlliste(n) herrauslösen
-				$teile = preg_split( '/(\[\[\[.*?\]\]\])/s', $text->mText, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
-				foreach ( $teile as $teil ) {
+				$teile = preg_split('/(\[\[\[.*?\]\]\])/s', $text->mText, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+				foreach ($teile as $teil) {
 					// Wenn Auswahlliste [[[...]]]
-					if ( substr( $teil, 0, 3 ) == '[[[' and substr( $teil, -3, 3 ) == ']]]' ) {
+					if (substr($teil, 0, 3) == '[[[' and substr($teil, -3, 3) == ']]]') {
 						// Klammern entfernen
-						$teil = substr( $teil, 3, strlen( $teil ) - 4 );
-						$tarray = explode( ',', $teil );
+						$teil = substr($teil, 3, strlen($teil) - 4);
+						$tarray = explode(',', $teil);
 						// Nur ein Argument -> Button statt Liste
-						if ( count( $tarray ) == 1 ) {
+						if (count($tarray) == 1) {
 							$idNr += 1;
-							$zeile = explode( '|', $tarray[0] );
+							$zeile = explode('|', $tarray[0]);
 							$zeile[] = '';
 							// Artikel einlesen umwandeln und im HTML Code ablegen
-							$tmpPage = WikiPage::factory( Title::makeTitle( 10, trim( $zeile[0] ) ) );
+							$tmpPage = WikiPage::factory(Title::makeTitle(10, trim($zeile[0])));
 							$tmpContent = $tmpPage->getContent();
-							if ( !empty( $tmpContent ) ) {
+							if (!empty($tmpContent)) {
 								$html .= Xml::element(
 									'button',
 									[
-										'onclick' => "mw.SGPack.insert('" . DDInsert::sgpEncode( '+' . self::filterPage( $tmpContent ) . '+' ) . "');",
+										'onclick' => "mw.SGPack.insert('" . DDInsert::sgpEncode('+' . self::filterPage($tmpContent) . '+') . "');",
 										'id' => 'NewArticleButton' . $idNr,
 										'type' => 'button'
 									],
 									$zeile[1]
 								);
 							}
-							unset( $tmpPage );
-							unset( $tmpContent );
+							unset($tmpPage);
+							unset($tmpContent);
 						}
-						if ( count( $tarray ) > 1 ) {
+						if (count($tarray) > 1) {
 							$idNr += 1;
 							// Dropdown Auswahl erstellen
 							$html .= '<select size="1" id="NewArticleSelect' . $idNr . '" onchange="mw.SGPack.insertSelect(this);">' . "\n";
 							// Erstes Element ist Bezeichnung für die "Überschrift"
-							$erst = empty( $tarray[0] ) ? wfMessage( 'newarticle-selecttitle' ) : $tarray[0];
+							$erst = empty($tarray[0]) ? wfMessage('newarticle-selecttitle') : $tarray[0];
 							$html .= Xml::element(
 								'option',
 								[
@@ -100,25 +103,25 @@ class NewArticle {
 								],
 								$erst
 							);
-							unset( $tarray[0] );
-							foreach ( $tarray as $index => $value ) {
+							unset($tarray[0]);
+							foreach ($tarray as $index => $value) {
 								// Die Zeile aufteilen
-								$zeile = explode( '|', $value );
+								$zeile = explode('|', $value);
 								$zeile[] = '';
 								// Artikel einlesen, umwandeln und im HTML Code ablegen
-								$tmpPage = WikiPage::factory( Title::makeTitle( 10, trim( $zeile[0] ) ) );
+								$tmpPage = WikiPage::factory(Title::makeTitle(10, trim($zeile[0])));
 								$tmpContent = $tmpPage->getContent()->getNativeData();
-								if ( !empty( $tmpContent ) ) {
+								if (!empty($tmpContent)) {
 									$html .= Xml::element(
 										'option',
 										[
-											'value' => DDInsert::sgpEncode( '+' . self::filterPage( $tmpContent ) . '+' )
+											'value' => DDInsert::sgpEncode('+' . self::filterPage($tmpContent) . '+')
 										],
 										$zeile[1]
 									);
 								}
-								unset( $tmpPage );
-								unset( $tmpContent );
+								unset($tmpPage);
+								unset($tmpContent);
 							}
 							$html .= '</select>';
 						}
