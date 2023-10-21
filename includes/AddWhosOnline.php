@@ -8,6 +8,7 @@
 
 namespace MediaWiki\Extension\SGPack;
 
+use MediaWiki\MediaWikiServices;
 use SpecialPage;
 use Title;
 
@@ -33,6 +34,7 @@ class AddWhosOnline {
 			// Place new item on second last position
 			$links['user-menu'] = array_slice($usermenu, 0, count( $usermenu ) - 1, true) + $a + array_slice($usermenu, -1, true);
 		}
+
 		return true;
 	}
 
@@ -42,11 +44,10 @@ class AddWhosOnline {
 	 * @return true
 	 */
 	public function onUserLogout( &$user ) {
-		global $wgDBname;
+		$dbProvider = MediaWikiServices::getInstance()->getDBLoadBalancerFactory();
+		$dbw = $dbProvider->getPrimaryDatabase();
+		$dbw->delete('online', [ 'userid = ' . $user->mId ], __METHOD__ );
 
-		$db = wfGetDB( DB_PRIMARY );
-		$db->selectDB( $wgDBname );
-		$db->delete( 'online', [ 'userid = ' . $user->mId ], __METHOD__ );
 		return true;
 	}
 }

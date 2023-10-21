@@ -242,8 +242,8 @@ class ParserAdds {
 				break;
 			case 'online':
 				if ( ExtensionRegistry::getInstance()->isLoaded( 'WhosOnline' ) ) {
-					$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-					$dbr = $lb->getConnectionRef( DB_REPLICA );
+					$dbProvider = MediaWikiServices::getInstance()->getDBLoadBalancerFactory();
+					$dbr = $dbProvider->getReplicaDatabase();
 					$res = $dbr->newSelectQueryBuilder()
 						->select( [ 'count(*)' ] )
 						->from( 'online' )
