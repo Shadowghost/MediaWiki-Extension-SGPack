@@ -55,8 +55,8 @@
 		]
 	},
 	"ResourceFileModulePaths": {
-		"localBasePath": "resources/ext.SGPack",
-		"remoteExtPath": "SGPack/resources/ext.SGPack"
+		"localBasePath": "resources",
+		"remoteExtPath": "SGPack/resources"
 	},
 	"ResourceModules": {
 		"ext.sgPack": {
