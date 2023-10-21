@@ -5,7 +5,7 @@
 		"Shadowghost"
 	],
 	"version": "2.0.0",
-	"url": "https://github.com/Shadowghost/SGPack",
+	"url": "https://github.com/Shadowghost/MediaWiki-Extension-SGPack",
 	"descriptionmsg": "sgpack-desc",
 	"license-name": "GPL-2.0-or-later",
 	"type": "other",
@@ -53,13 +53,6 @@
 		"EditPage::showEditForm:initial": [
 			"newarticle"
 		]
-	},
-	"MediaHandlers": {
-		"audio/aac": "AudioPlayer,",
-		"audio/flac": "AudioPlayer,",
-		"audio/mp3": "AudioPlayer",
-		"audio/mpeg": "AudioPlayer",
-		"audio/wav": "AudioPlayer,"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "resources/ext.SGPack",
