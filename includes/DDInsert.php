@@ -147,7 +147,7 @@ class DDInsert
 		// Picture
 		$iURL = '';
 		if (isset($args['picture'])) {
-			$image = wfFindFile($args['picture']);
+			$image = MediaWikiServices::getInstance()->getRepoGroup()->findFile($args['picture']);
 			if ($image) {
 				$iURL = $image->getURL();
 				$iwidth = $image->getWidth();

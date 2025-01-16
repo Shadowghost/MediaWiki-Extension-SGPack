@@ -231,10 +231,12 @@ class ParserAdds
 				$back = '[[' . $user->getUserPage()->getTalkNsText() . $user->mName . ']]';
 				break;
 			case 'groups':
-				$back = implode(",", $user->getGroups());
+				$userService = MediaWikiServices::getInstance()->getUserGroupManager();
+				$back = implode(",", $userService->getUserGroups($user));
 				break;
 			case 'group':
-				$back = in_array($param, $user->getGroups()) ? $param : '';
+				$userService = MediaWikiServices::getInstance()->getUserGroupManager();
+				$back = in_array($param, $userService->getUserGroups($user)) ? $param : '';
 				break;
 			case 'browser':
 				$back = $_SERVER['HTTP_USER_AGENT'];

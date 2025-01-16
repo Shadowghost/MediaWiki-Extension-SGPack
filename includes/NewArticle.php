@@ -11,7 +11,6 @@ namespace MediaWiki\Extension\SGPack;
 use MediaWiki\MediaWikiServices;
 use ParserOptions;
 use Title;
-use WikiPage;
 use Xml;
 
 class NewArticle
@@ -45,12 +44,13 @@ class NewArticle
 	public static function onEditPage__showEditForm_initial($editPage, $output)
 	{
 		$parser = MediaWikiServices::getInstance()->getParser();
+		$pageFactory = MediaWikiServices::getInstance()->getWikiPageFactory();
 		$title = $output->getTitle();
 
 		// Check if new article
 		if (!$title->exists()) {
 			// Load control page "MediaWiki:NewArticle-NS"
-			$page = WikiPage::factory(Title::makeTitle(8, 'NewArticle-' . $title->getNamespace()));
+			$page = $pageFactory->newFromTitle(Title::makeTitleSafe(8, 'NewArticle-' . $title->getNamespace()));
 			$content = $page->getContent();
 			// Check if something is loaded
 			if (!empty($content)) {
@@ -60,7 +60,7 @@ class NewArticle
 				// Seite parsen
 				$text = $parser->parse($content->getNativeData(), $page->getTitle(), new ParserOptions($output->getUser()));
 				// Definition der Auswahlliste(n) herrauslösen
-				$teile = preg_split('/(\[\[\[.*?\]\]\])/s', $text->mText, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+				$teile = preg_split('/(\[\[\[.*?\]\]\])/s', $text->getText(), -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 				foreach ($teile as $teil) {
 					// Wenn Auswahlliste [[[...]]]
 					if (substr($teil, 0, 3) == '[[[' and substr($teil, -3, 3) == ']]]') {
@@ -72,8 +72,8 @@ class NewArticle
 							$idNr += 1;
 							$zeile = explode('|', $tarray[0]);
 							$zeile[] = '';
-							// Artikel einlesen umwandeln und im HTML Code ablegen
-							$tmpPage = WikiPage::factory(Title::makeTitle(10, trim($zeile[0])));
+							// Artikel einlesen, umwandeln und im HTML Code ablegen
+							$tmpPage = $pageFactory->newFromTitle(Title::makeTitleSafe(10, trim($zeile[0])));
 							$tmpContent = $tmpPage->getContent();
 							if (!empty($tmpContent)) {
 								$html .= Xml::element(
@@ -109,7 +109,7 @@ class NewArticle
 								$zeile = explode('|', $value);
 								$zeile[] = '';
 								// Artikel einlesen, umwandeln und im HTML Code ablegen
-								$tmpPage = WikiPage::factory(Title::makeTitle(10, trim($zeile[0])));
+								$tmpPage = $pageFactory->newFromTitle(Title::makeTitleSafe(10, trim($zeile[0])));
 								$tmpContent = $tmpPage->getContent()->getNativeData();
 								if (!empty($tmpContent)) {
 									$html .= Xml::element(
