@@ -10,7 +10,7 @@ namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\MediaWikiServices;
 use SpecialPage;
-use Title;
+use MediaWiki\Title\Title;
 
 class AddWhosOnline
 {

@@ -10,7 +10,7 @@ namespace MediaWiki\Extension\SGPack;
 
 use ContentHandler;
 use MediaWiki\Revision\SlotRecord;
-use Title;
+use MediaWiki\Title\Title;
 use WikiPage;
 
 class CacheArray

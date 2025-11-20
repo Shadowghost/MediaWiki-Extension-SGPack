@@ -9,7 +9,7 @@ mw.SGPack = {
 	// String decodieren und mit insertTags in Editorfeld einsetzen
 	insert: function (str) {
 		let text = this.rawdecode(str + "");
-    let astr = text.split('+');
+		let astr = text.split('+');
 		let currentFocused = $("#wpTextbox1");
 		// Apply to dynamically created textboxes as well as normal ones
 		$(document).on("focus", "textarea, input:text, .CodeMirror", function () {
@@ -27,13 +27,6 @@ mw.SGPack = {
 				peri: astr[1],
 				post: astr[2],
 			});
-		}
-
-		var ace = $(".ace_editor");
-		if (ace.length) {
-			ace[0].env.document.setValue(text);
-		} else {
-			$("#wpTextbox1").val(text);
 		}
 	},
 
