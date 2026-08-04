@@ -87,7 +87,8 @@ class ParserAdds {
 	 * @param string $modus Art der Suche. 'a' - Alle Elemente, 'e' - Ein Element
 	 * @param string $result Rückgabe bei Erfolg bzw. Misserfolg durch $trenn getrennt
 	 *
-	 * @return string Gefundene Elemente oder Leer
+	 * @return array Gefundene Elemente oder Leer, in der Parserfunktions-Form
+	 *   [ $text, 'noparse' => true ]
 	 */
 	public static function sgPackIn( &$parser, $element = '', $menge = '', $trenn = ',', $modus = 'a', $result = '' ) {
 		// Parameter prüfen
@@ -149,7 +150,7 @@ class ParserAdds {
 	 * @param Parser &$parser
 	 * @param string $text
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public static function sgPackTrim( &$parser, $text = '' ) {
 		return [ trim( $text ), 'noparse' => true ];
@@ -202,7 +203,8 @@ class ParserAdds {
 	 * @param string $arg
 	 * @param string $param
 	 *
-	 * @return array
+	 * @return array|string The parser-function array form, or a bare error string
+	 *   for an invalid username
 	 */
 	public static function sgPackUserInfo( &$parser, $arg = 'name', $param = '' ) {
 		$services = MediaWikiServices::getInstance();
