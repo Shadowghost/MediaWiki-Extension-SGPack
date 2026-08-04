@@ -3,7 +3,7 @@
 This MediaWiki extension bundles additional functionality for [https://stargate-wiki.de](https://stargate-wiki.de):
 
 * Personal `Who's Online` link and auto-removal of logged out users
-* Edit icon and jump-to-top icon instead of edit text on headings
+* Edit icon and jump-to-top icon instead of edit text on headings (legacy Vector only)
 * Multiple parser extensions
 * Implementation of dropdown menu
 * Automatical loading of a template selector when creating new pages (namespace specific)
@@ -24,8 +24,8 @@ wfLoadExtension( 'SGPack' );
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `$wgSGPackImageTop` | `/extensions/SGPack/resources/arrow-up-icon.png` | Icon for the jump-to-top link on headings |
-| `$wgSGPackImageEdit` | `/extensions/SGPack/resources/pencil-edit-icon.png` | Icon that replaces the `[edit]` text on headings |
+| `$wgSGPackImageTop` | `/extensions/SGPack/resources/arrow-up-icon.png` | Icon for the jump-to-top link on headings (legacy Vector only) |
+| `$wgSGPackImageEdit` | `/extensions/SGPack/resources/pencil-edit-icon.png` | Icon that replaces the `[edit]` text on headings (legacy Vector only) |
 | `$wgSGPackAudioSeekBar` | `false` | Show a seek bar on inline audio controls |
 | `$wgSGPackUserStatisticsCacheExpiry` | `3600` | Seconds a page showing user statistics may stay in the parser cache; `0` never caches it |
 

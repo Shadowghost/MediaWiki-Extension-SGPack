@@ -51,16 +51,23 @@ class SGHTML implements
 		// presentational: the edit-icon swap is CSS on .mw-editsection, and the
 		// jump-to-top link is inserted by a small ResourceLoader module, which is
 		// the only part that needs an element to exist.
-		$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
-		$out->addModules( 'ext.sgPack.sghtml' );
+		//
+		// Restricted to legacy Vector ('vector'; Vector 2022 reports
+		// 'vector-2022'), whose heading markup these rules were written for. Newer
+		// skins style .mw-editsection themselves and place the heading inside its
+		// own flex container, where a floated icon lands in the wrong place.
+		if ( $skin->getSkinName() === 'vector' ) {
+			$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
+			$out->addModules( 'ext.sgPack.sghtml' );
 
-		// The two icon paths are configurable, so they cannot live in the static
-		// stylesheet; everything else about these rules does.
-		$config = $out->getConfig();
-		$out->addInlineStyle(
-			'.mw-sgpack-top{background-image:' . self::cssUrl( $config->get( 'SGPackImageTop' ) ) . '}'
-			. '.mw-editsection a{background-image:' . self::cssUrl( $config->get( 'SGPackImageEdit' ) ) . '}'
-		);
+			// The two icon paths are configurable, so they cannot live in the static
+			// stylesheet; everything else about these rules does.
+			$config = $out->getConfig();
+			$out->addInlineStyle(
+				'.mw-sgpack-top{background-image:' . self::cssUrl( $config->get( 'SGPackImageTop' ) ) . '}'
+				. '.mw-editsection a{background-image:' . self::cssUrl( $config->get( 'SGPackImageEdit' ) ) . '}'
+			);
+		}
 
 		// Load SGPack specific JS and CSS
 		if (
