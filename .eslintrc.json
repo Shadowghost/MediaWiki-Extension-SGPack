@@ -5,6 +5,11 @@
 		"wikimedia/jquery",
 		"wikimedia/mediawiki"
 	],
+	"ignorePatterns": [
+		"node_modules/",
+		"vendor/",
+		"package-lock.json"
+	],
 	"rules": {
 		"jsdoc/no-undefined-types": [ "warn", {
 			"definedTypes": [ "JQuery" ]

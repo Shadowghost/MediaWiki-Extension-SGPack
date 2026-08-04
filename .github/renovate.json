@@ -49,6 +49,29 @@
             "addLabels": [
                 "npm"
             ]
+        },
+        {
+            "description": "Hold eslint on 8.x: eslint 9 reads only flat config, while eslint-config-wikimedia 0.32.x still ships eslintrc-style configs and peer-depends on eslint ^8.57.0. Lift this together with the .eslintrc.json -> eslint.config.js migration once upstream supports it.",
+            "matchManagers": [
+                "npm"
+            ],
+            "matchPackageNames": [
+                "eslint"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "grunt-eslint was removed deliberately: v26 depends on eslint ^9 and aborted before linting anything. npm test runs eslint directly instead.",
+            "matchManagers": [
+                "npm"
+            ],
+            "matchPackageNames": [
+                "grunt-eslint"
+            ],
+            "enabled": false
         }
     ]
 }

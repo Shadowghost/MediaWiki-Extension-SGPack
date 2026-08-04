@@ -129,6 +129,11 @@ class SGPackStructureTest extends TestCase {
 	 * The regression this exists for: SGHTML kept calling
 	 * addModuleStyles( 'ext.sgPack.styles' ) after that module was deleted from
 	 * extension.json, which no other check caught.
+	 *
+	 * Both call shapes have to be matched. OutputPage::addModules() takes a bare
+	 * string, but ParserOutput::addModules() requires an array, so a module loaded
+	 * from a parser hook appears as addModules( [ 'x' ] ) and an
+	 * only-quoted-string pattern would silently skip it.
 	 */
 	public function testEveryModuleReferencedFromPhpIsDeclared() {
 		$ext = self::readJson( 'extension.json' );
@@ -137,12 +142,15 @@ class SGPackStructureTest extends TestCase {
 		$referenced = [];
 		foreach ( self::phpSources() as $file ) {
 			preg_match_all(
-				"/addModules?(?:Styles)?\(\s*'([^']+)'/",
+				"/addModules?(?:Styles)?\(\s*(\[[^\]]*\]|'[^']+')/",
 				file_get_contents( $file ),
 				$matches
 			);
-			foreach ( $matches[1] as $module ) {
-				$referenced[$module] = basename( $file );
+			foreach ( $matches[1] as $argument ) {
+				preg_match_all( "/'([^']+)'/", $argument, $names );
+				foreach ( $names[1] as $module ) {
+					$referenced[$module] = basename( $file );
+				}
 			}
 		}
 
