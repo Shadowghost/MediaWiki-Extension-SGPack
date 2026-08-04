@@ -4,5 +4,10 @@
 		"wikimedia/client/es6",
 		"wikimedia/jquery",
 		"wikimedia/mediawiki"
-	]
+	],
+	"rules": {
+		"jsdoc/no-undefined-types": [ "warn", {
+			"definedTypes": [ "JQuery" ]
+		} ]
+	}
 }

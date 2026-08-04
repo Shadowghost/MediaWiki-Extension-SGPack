@@ -47,7 +47,7 @@ jobs:
 
       - run: npm ci
 
-      # eslint + banana
+      # eslint + tsc --noEmit over resources/ + banana
       - name: npm test
         run: npm test
 

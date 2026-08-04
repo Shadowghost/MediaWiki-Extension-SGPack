@@ -13,7 +13,13 @@
 	// init fixes both the leak and the ordering.
 	let $currentFocused = $( '#wpTextbox1' );
 
-	// String (UTF-8 sicher) decode
+	/**
+	 * String (UTF-8 sicher) decode
+	 *
+	 * @param {string} str
+	 *
+	 * @return {string}
+	 */
 	function rawdecode( str ) {
 		return decodeURIComponent( str ).replace( /%(?![\da-f]{2})/gi, () => '%25' );
 	}
@@ -21,7 +27,9 @@
 	/**
 	 * Insert an encoded `pre+peri+post` payload at the cursor.
 	 *
-	 * @param {string} str Payload as produced by DDInsert::sgpEncode()
+	 * @param {string|undefined} str Payload as produced by DDInsert::sgpEncode().
+	 *   May be undefined: callers read it out of a data attribute, which can be
+	 *   absent, and the guard below is what handles that.
 	 */
 	function insert( str ) {
 		if ( !str || !$currentFocused.length ) {

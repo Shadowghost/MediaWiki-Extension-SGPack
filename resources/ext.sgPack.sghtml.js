@@ -6,7 +6,7 @@
 	 * it needs a real element. href="#top" is handled natively by browsers, so no
 	 * inline handler and no scroll script are involved.
 	 *
-	 * @param {jQuery} $content
+	 * @param {JQuery} $content
 	 */
 	function addTopLinks( $content ) {
 		$content.find( 'h2, h3, h4, h5, h6' ).each( function () {

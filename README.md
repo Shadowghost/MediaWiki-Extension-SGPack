@@ -49,5 +49,9 @@ See `CLAUDE.md` for the architecture notes, the PHP↔JS contract, and how to ru
 
 ```bash
 composer test   # parallel-lint, minus-x, phpcs, phpunit structure tests
-npm test        # eslint, banana i18n validation
+npm test        # eslint, TypeScript typecheck of resources/, banana i18n validation
 ```
+
+The JavaScript in `resources/` is plain JS, typechecked in place against
+[`types-mediawiki`](https://www.npmjs.com/package/types-mediawiki) via `checkJs` — run it alone with
+`npm run typecheck`.

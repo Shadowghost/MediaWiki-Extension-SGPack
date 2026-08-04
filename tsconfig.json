@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"target": "ES2017",
+		"lib": [ "ES2017", "DOM" ],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": [ "types-mediawiki" ],
+		"allowJs": true,
+		"checkJs": true,
+		"noEmit": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"resources/**/*.js",
+		"types/**/*.d.ts"
+	]
+}
