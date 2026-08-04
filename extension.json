@@ -41,6 +41,9 @@
 		"ParserFirstCallInit": [
 			"default"
 		],
+		"ParserOptionsRegister": [
+			"default"
+		],
 		"BeforePageDisplay": [
 			"sghtml"
 		],

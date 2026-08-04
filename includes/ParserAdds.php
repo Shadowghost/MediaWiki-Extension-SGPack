@@ -9,23 +9,32 @@
 namespace MediaWiki\Extension\SGPack;
 
 use ExtensionRegistry;
+use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
 use RequestContext;
 use Title;
-use User;
 
 class ParserAdds {
+
+	/**
+	 * Name of the parser option registered via the ParserOptionsRegister hook.
+	 *
+	 * Reading it from a parser function records it as used, which fragments the
+	 * parser cache key by user instead of disabling the cache for the page.
+	 *
+	 * @see Hooks::onParserOptionsRegister()
+	 */
+	public const USER_PARSER_OPTION = 'sgpack-userinfo-user';
+
 	/**
 	 * @param Parser &$parser
 	 * @param string $rel
 	 * @param string $page
-	 * @param string title
+	 * @param string $title
 	 *
 	 * @return string
 	 */
 	public static function sgPackLink( &$parser, $rel = '', $page = '', $title = '' ) {
-		global $wgOut;
-
 		if ( empty( $rel ) ) {
 			return '<strong class="error">' . wfMessage( 'parseradds_link_norel' ) . '</strong>';
 		}
@@ -38,12 +47,22 @@ class ParserAdds {
 			$title = $page;
 		}
 
-		if ( !( $pt = Title::newFromText( $page ) ) ) {
+		$pt = Title::newFromText( $page );
+		if ( !$pt ) {
 			return '<strong class="error">' . wfMessage( 'parseradds_link_illegalpage' ) . '</strong>';
 		}
 
 		if ( $pt->exists() ) {
-			$wgOut->addLink( [ 'rel' => $rel, 'title' => $title, 'href' => $pt->getFullURL() ] );
+			// addHeadItem(), not $wgOut->addLink(): a parser function only runs on a
+			// parser-cache miss, so anything written to OutputPage from here silently
+			// disappeared on every cached view. Head items are stored in the
+			// ParserOutput and so survive the cache.
+			$parser->getOutput()->addHeadItem(
+				Html::element( 'link', [ 'rel' => $rel, 'title' => $title, 'href' => $pt->getFullURL() ] ),
+				// Keyed so repeated calls for the same rel/page collapse instead of
+				// emitting duplicate <link> tags
+				'sgpack-link-' . $rel . '-' . $pt->getPrefixedDBkey()
+			);
 		}
 
 		return '';
@@ -95,7 +114,7 @@ class ParserAdds {
 		}
 
 		// Prüfen, ob ein Element in der Menge
-		if ( $modus == 'e' or $modus == 's' ) {
+		if ( $modus == 'e' || $modus == 's' ) {
 			foreach ( $aelement as $wert ) {
 				if ( in_array( $wert, $amenge ) ) {
 					$back .= ( empty( $back ) ? '' : $trenn ) . $wert;
@@ -130,12 +149,14 @@ class ParserAdds {
 	/**
 	 * @param Parser &$parser
 	 * @param string $arg
-	 * @param string $text
+	 * @param string $default
 	 *
 	 * @return array
 	 */
 	public static function sgPackTOCMod( &$parser, $arg = '', $default = 'set' ) {
-		$parser->getOutput()->updateCacheExpiry( 0 );
+		// No updateCacheExpiry( 0 ) here: the output is a __TOC__/__NOTOC__/__FORCETOC__
+		// magic word derived purely from $arg, so it is neither user- nor
+		// request-dependent and there is nothing for it to invalidate.
 		$back = '';
 		if ( empty( $arg ) ) {
 			$arg = $default;
@@ -181,9 +202,21 @@ class ParserAdds {
 	 * @return array
 	 */
 	public static function sgPackUserInfo( &$parser, $arg = 'name', $param = '' ) {
-		$parser->getOutput()->updateCacheExpiry( 0 );
+		$services = MediaWikiServices::getInstance();
+		$options = $parser->getOptions();
+
+		// Reading the registered option marks this parse as varying by user, so the
+		// parser cache key splits per user. That replaces the previous blanket
+		// updateCacheExpiry( 0 ), which disabled caching entirely for every page
+		// using this function.
+		$options->getOption( self::USER_PARSER_OPTION );
+
+		// The user the parse is *for*, not RequestContext::getMain()->getUser().
+		// The latter is meaningless during job-queue and refreshLinks re-parses,
+		// which is why this function used to render the wrong user's data.
+		$user = $services->getUserFactory()->newFromUserIdentity( $options->getUserIdentity() );
+
 		$back = '';
-		$user = RequestContext::getMain()->getUser();
 		switch ( strtolower( $arg ) ) {
 			case 'name':
 				$back = $user->getName();
@@ -202,12 +235,14 @@ class ParserAdds {
 				$back = $user->getEmail();
 				break;
 			case 'skin':
-				$back = $user->getSkin()->skinname;
+				// User::getSkin() has not existed for many releases, so this case
+				// was a hard fatal. The user's skin preference is the equivalent.
+				$back = $services->getUserOptionsLookup()->getOption( $user, 'skin' );
 				break;
 			case 'home':
 				if ( !empty( $param ) ) {
-					$user = User::NewFromName( $param );
-					if ( $user === false ) {
+					$user = $services->getUserFactory()->newFromName( $param );
+					if ( !$user ) {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
 				}
@@ -215,27 +250,33 @@ class ParserAdds {
 				break;
 			case 'talk':
 				if ( !empty( $param ) ) {
-					$user = User::NewFromName( $param );
-					if ( $user === false ) {
+					$user = $services->getUserFactory()->newFromName( $param );
+					if ( !$user ) {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
 				}
-				$back = '[[' . $user->getUserPage()->getTalkNsText() . $user->getName() . ']]';
+				// getUserPage()->getTalkNsText() . getName() produced
+				// "[[User talkFoo]]" — the namespace text carries no colon.
+				$back = '[[' . $user->getTalkPage()->getFullText() . ']]';
 				break;
 			case 'groups':
-				$userService = MediaWikiServices::getInstance()->getUserGroupManager();
+				$userService = $services->getUserGroupManager();
 				$back = implode( ",", $userService->getUserGroups( $user ) );
 				break;
 			case 'group':
-				$userService = MediaWikiServices::getInstance()->getUserGroupManager();
+				$userService = $services->getUserGroupManager();
 				$back = in_array( $param, $userService->getUserGroups( $user ) ) ? $param : '';
 				break;
 			case 'browser':
+				// Derived from the current HTTP request, so it cannot be represented
+				// in the parser cache key at all — this case alone still has to opt
+				// the page out of caching.
+				$parser->getOutput()->updateCacheExpiry( 0 );
 				// Absent on requests without a User-Agent header and in CLI contexts (jobs, maintenance)
 				$userAgent = RequestContext::getMain()->getRequest()->getHeader( 'User-Agent' );
 				$back = $userAgent !== false ? $userAgent : '';
 				if ( !empty( $param ) ) {
-					if ( false === strpos( $back, $param ) ) {
+					if ( strpos( $back, $param ) === false ) {
 						$back = '';
 					} else {
 						$back = $param;
@@ -243,8 +284,11 @@ class ParserAdds {
 				}
 				break;
 			case 'online':
+				// Who is online right now changes minute to minute and is not a
+				// function of the parse, so this case also cannot be cached.
+				$parser->getOutput()->updateCacheExpiry( 0 );
 				if ( ExtensionRegistry::getInstance()->isLoaded( 'WhosOnline' ) ) {
-					$dbProvider = MediaWikiServices::getInstance()->getDBLoadBalancerFactory();
+					$dbProvider = $services->getDBLoadBalancerFactory();
 					$dbr = $dbProvider->getReplicaDatabase();
 					$res = $dbr->newSelectQueryBuilder()
 						->select( [ 'count(*)' ] )
@@ -276,6 +320,9 @@ class ParserAdds {
 	 */
 	public static function sgPackRecursive( $parser, $calltemplate = '', $text = '' ) {
 		// Weitere Übergabeparameter vorbereiten
+		// $p was never defined, so every parameter past $text was dropped. isset()
+		// on an undefined variable does not warn, which is why this went unnoticed.
+		$p = func_get_args();
 		$callparameter = '';
 		$i = 3;
 		while ( isset( $p[$i] ) ) {

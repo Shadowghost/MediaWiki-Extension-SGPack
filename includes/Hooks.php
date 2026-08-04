@@ -9,10 +9,13 @@
 namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Hook\ParserFirstCallInitHook;
+use MediaWiki\Hook\ParserOptionsRegisterHook;
 use Parser;
+use ParserOptions;
 
 class Hooks implements
-	ParserFirstCallInitHook
+	ParserFirstCallInitHook,
+	ParserOptionsRegisterHook
 {
 	/**
 	 * @param Parser $parser
@@ -31,5 +34,26 @@ class Hooks implements
 		$parser->setFunctionHook( 'recursiv', [ ParserAdds::class, 'sgPackRecursive' ] );
 		$parser->setFunctionHook( 'in', [ ParserAdds::class, 'sgPackIn' ] );
 		$parser->setFunctionHook( 'link', [ ParserAdds::class, 'sgPackLink' ] );
+	}
+
+	/**
+	 * Register the user-dependent option {{userinfo}} varies on.
+	 *
+	 * Declaring it here and reading it in the parser function is the supported way
+	 * to make a parse user-specific: the cache key gains the user's name, so each
+	 * user gets their own cache entry. The alternative the function used before,
+	 * ParserOutput::updateCacheExpiry( 0 ), removed every page using {{userinfo}}
+	 * from the parser cache altogether.
+	 *
+	 * @param array &$defaults
+	 * @param array &$inCacheKey
+	 * @param array &$lazyLoad
+	 */
+	public function onParserOptionsRegister( &$defaults, &$inCacheKey, &$lazyLoad ) {
+		$defaults[ParserAdds::USER_PARSER_OPTION] = null;
+		$inCacheKey[ParserAdds::USER_PARSER_OPTION] = true;
+		$lazyLoad[ParserAdds::USER_PARSER_OPTION] = static function ( ParserOptions $options ) {
+			return $options->getUserIdentity()->getName();
+		};
 	}
 }

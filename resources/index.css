@@ -1,4 +1,10 @@
-ibutton {
-    padding: 1px;
-    font-size: small;
+/*
+ * These rules used to target a bare `ibutton` element selector, which matches
+ * nothing. The classes actually emitted are `jsbutton` (<jsbutton>) and
+ * `mw-sgpack-ddinsert-button` (<ddbutton>).
+ */
+.jsbutton,
+.mw-sgpack-ddinsert-button {
+	padding: 1px;
+	font-size: small;
 }

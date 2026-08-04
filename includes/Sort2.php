@@ -18,6 +18,11 @@ class Sort2 {
 	var $parser;
 
 	/**
+	 * @var PPFrame
+	 */
+	var $frame;
+
+	/**
 	 * @var string
 	 */
 	var $order;
@@ -53,15 +58,23 @@ class Sort2 {
 	var $title;
 
 	/**
-	 * @var string
+	 * Whether the documented `style=` attribute is honoured.
+	 *
+	 * This was declared and never assigned, so `$this->allowStyles == true` was
+	 * always false and `style=` had in fact never worked. Values are escaped by
+	 * Html::openElement() and filtered by Sanitizer::checkCss() in loadSettings().
+	 *
+	 * @var bool
 	 */
 	var $allowStyles;
 
 	/**
-	 * @param Parser &$parser
+	 * @param Parser $parser
+	 * @param PPFrame $frame
 	 */
-	function __construct( &$parser ) {
-		$this->parser = &$parser;
+	function __construct( $parser, $frame ) {
+		$this->parser = $parser;
+		$this->frame = $frame;
 		$this->order = 'asc';
 		$this->type = 'ul';
 		$this->separator = "\n";
@@ -69,6 +82,7 @@ class Sort2 {
 		$this->style = "";
 		$this->start = null;
 		$this->title = "";
+		$this->allowStyles = true;
 	}
 
 	/**
@@ -80,7 +94,7 @@ class Sort2 {
 	 * @return string
 	 */
 	public static function sgPackRenderSort( $input, $args, $parser, $frame ) {
-		$sorter2 = new Sort2( $parser );
+		$sorter2 = new Sort2( $parser, $frame );
 		$sorter2->loadSettings( $args );
 		return $sorter2->sortToHtml( $input );
 	}
@@ -141,24 +155,34 @@ class Sort2 {
 	 */
 	private function internalSort( $text ) {
 		$lines = explode( "\n", $text );
-		$inter = [];
-		foreach ( $lines as $line ) {
-			$inter[$line] = $this->stripWikiTokens( $line );
+
+		// Map line *index* to sort key. This used to be keyed by the line content
+		// itself ( $inter[$line] = ... ), which silently collapsed identical
+		// entries — a list with two equal lines came back with one.
+		$keys = [];
+		foreach ( $lines as $index => $line ) {
+			$keys[$index] = $this->stripWikiTokens( $line );
 		}
 
+		// natsort/natcasesort preserve keys, so the indexes survive the sort
 		if ( $this->order != "none" ) {
 			if ( $this->casesense == "true" ) {
-				natsort( $inter );
+				natsort( $keys );
 			} else {
-				natcasesort( $inter );
+				natcasesort( $keys );
 			}
 		}
 
 		if ( $this->order == 'desc' ) {
-			$inter = array_reverse( $inter, true );
+			$keys = array_reverse( $keys, true );
 		}
 
-		return array_keys( $inter );
+		// Resolve the sorted indexes back to the original lines
+		$sorted = [];
+		foreach ( array_keys( $keys ) as $index ) {
+			$sorted[] = $lines[$index];
+		}
+		return $sorted;
 	}
 
 	/**
@@ -239,7 +263,7 @@ class Sort2 {
 			}
 		}
 
-		if ( $this->type == "ul" or $this->type == "ol" or $this->type == "dl" ) {
+		if ( $this->type == "ul" || $this->type == "ol" || $this->type == "dl" ) {
 			array_unshift( $list, $starttoken );
 			array_push( $list, $endtoken );
 		}
@@ -253,9 +277,9 @@ class Sort2 {
 	 * @return string
 	 */
 	private function parse( $text ) {
-		$title = &$this->parser->getTitle();
-		$options = &$this->parser->getOptions();
-		$output = $this->parser->parse( $text, $title, $options, true, false );
-		return $output->getText();
+		// recursiveTagParse(), not Parser::parse(): re-entering a full parse from
+		// inside a tag hook can corrupt the state of the parse already in progress.
+		// The tag hook already receives the frame, which this class used to discard.
+		return $this->parser->recursiveTagParse( $text, $this->frame );
 	}
 }
