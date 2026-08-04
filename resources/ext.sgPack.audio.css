@@ -35,26 +35,21 @@
 }
 
 /*
- * inline-block with one explicit vertical-align, not inline-flex.
- *
- * An inline-flex box whose items are all centred has no baseline to share, so
- * browsers synthesise one from its bottom margin edge and the control sits wrong
- * against the text. Tuning vertical-align on the flex container only masks that;
- * aligning a plain inline-block is predictable.
+ * inline-block, not inline-flex: an inline-flex box whose items are all centred
+ * has no baseline to share, so browsers synthesise one from its bottom margin
+ * edge and the control sits wrong against the text.
  */
 .mw-sgpack-audio-icon {
 	display: inline-block;
 	width: 0.72em;
 	height: 0.72em;
-	/* `middle` aligns the box's midpoint with baseline + half the x-height, which
-	   is exactly "optically centred on lowercase text" - and it reads the real
-	   font metrics instead of assuming an x-height, so no magic number to retune
-	   per skin or font size. */
+	/* `middle` aligns the box's midpoint with baseline + half the x-height, i.e.
+	   optically centred on lowercase text, read from the real font metrics rather
+	   than an assumed x-height. */
 	vertical-align: middle;
 	background-color: currentColor;
-	/* clip-path, not a border triangle: border diagonals get almost no
-	   antialiasing at this size and read as stepped/pixelated, whereas a clipped
-	   edge is smoothed. */
+	/* clip-path rather than a border triangle: border diagonals get almost no
+	   antialiasing at this size, whereas a clipped edge is smoothed. */
 	-webkit-clip-path: polygon( 0 0, 100% 50%, 0 100% );
 	clip-path: polygon( 0 0, 100% 50%, 0 100% );
 }

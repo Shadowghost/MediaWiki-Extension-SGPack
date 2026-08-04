@@ -47,16 +47,10 @@ class SGHTML implements
 			return;
 		}
 
-		// Section edit icons and the jump-to-top links.
-		//
-		// This used to be 16 str_replace() passes over the entire body HTML on
-		// every page view, matching against localised wfMessage( 'edit' ) output
-		// and skin-generated mw-headline/mw-editsection-* markup that MediaWiki
-		// core has since changed — so it had largely stopped working. Both
-		// features are purely presentational: the edit-icon swap is CSS on
-		// .mw-editsection, and the jump-to-top link is inserted by a small
-		// ResourceLoader module, which is the only part that genuinely needs an
-		// element to exist.
+		// Section edit icons and the jump-to-top links. Both are purely
+		// presentational: the edit-icon swap is CSS on .mw-editsection, and the
+		// jump-to-top link is inserted by a small ResourceLoader module, which is
+		// the only part that needs an element to exist.
 		$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
 		$out->addModules( 'ext.sgPack.sghtml' );
 

@@ -2,9 +2,9 @@
 	/**
 	 * Add a jump-to-top link to each section heading.
 	 *
-	 * This is the one part of the old SGHTML rewriting that CSS cannot do, since
-	 * it needs a real element. href="#top" is handled natively by browsers, so no
-	 * inline handler and no scroll script are involved.
+	 * Needs a real element, so it cannot be done in CSS. href="#top" is handled
+	 * natively by browsers, so no inline handler and no scroll script are
+	 * involved.
 	 *
 	 * @param {JQuery} $content
 	 */

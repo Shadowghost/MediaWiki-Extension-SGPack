@@ -18,10 +18,9 @@ class CacheArray {
 	/**
 	 * ParserOutput extension-data key the carrays are stored under.
 	 *
-	 * The store used to be a static property, which meant it was never reset and
-	 * leaked between unrelated parses sharing one PHP process — job runners and
-	 * API batch parses would see carrays built by an earlier, unrelated page.
-	 * Scoping it to the ParserOutput ties it to the parse that created it.
+	 * Scoping the store to the ParserOutput ties it to the parse that created it,
+	 * so carrays cannot leak between unrelated parses sharing one PHP process
+	 * such as job runners and API batch parses.
 	 */
 	private const EXT_DATA_KEY = 'sgpack-carray';
 

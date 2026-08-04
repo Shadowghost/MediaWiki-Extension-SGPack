@@ -54,9 +54,7 @@ class AddWhosOnline implements
 		// Place new item on second last position.
 		//
 		// The trailing `true` is $preserve_keys, so $length has to be passed
-		// explicitly as null. It previously sat in the $length position, where it
-		// was coerced to 1 — harmless only because array_slice() always preserves
-		// string keys, which is what the personal menu uses.
+		// explicitly as null.
 		$links['user-menu'] = array_slice( $usermenu, 0, count( $usermenu ) - 1, true )
 			+ $a
 			+ array_slice( $usermenu, -1, null, true );

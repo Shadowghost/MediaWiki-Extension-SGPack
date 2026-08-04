@@ -1,7 +1,6 @@
 /*
- * These rules used to target a bare `ibutton` element selector, which matches
- * nothing. The classes actually emitted are `jsbutton` (<jsbutton>) and
- * `mw-sgpack-ddinsert-button` (<ddbutton>, and NewArticle's template buttons).
+ * `jsbutton` is emitted by <jsbutton>, `mw-sgpack-ddinsert-button` by <ddbutton>
+ * and NewArticle's template buttons.
  */
 .jsbutton,
 .mw-sgpack-ddinsert-button {

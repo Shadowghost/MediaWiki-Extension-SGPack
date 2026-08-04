@@ -50,11 +50,11 @@ class DDInsert {
 	 * edit a page. They cannot be made safe while editors control their contents,
 	 * so they are dropped rather than escaped.
 	 *
-	 * Every remaining attribute goes through Html::rawElement(), which escapes it.
-	 * That matters even for plain attributes such as `id` or `value`, because
+	 * Every attribute goes through Html::rawElement(), which escapes it. That
+	 * matters even for plain attributes such as `id` or `value`, because
 	 * Sanitizer::decodeTagAttributes() resolves character references before a tag
-	 * hook sees them — so a `&quot;` used to break out of the attribute and inject
-	 * a handler of its own.
+	 * hook sees them, so an unescaped `&quot;` can close the attribute and inject a
+	 * handler of its own.
 	 *
 	 * @param string $input
 	 * @param array $args
@@ -97,11 +97,10 @@ class DDInsert {
 		// If no show parameter is given use input also as showText.
 		//
 		// $input must not reach the output raw: tag-hook return values are spliced
-		// into the page behind a strip marker and are never sanitised by MediaWiki,
-		// so <ddbutton><img src=x onerror=…></ddbutton> used to execute. Parsing it
-		// routes the markup through Sanitizer while still allowing wikitext in the
-		// label, which plain escaping would not. The insert payload below is built
-		// from the unparsed $input and is unaffected.
+		// into the page behind a strip marker and are never sanitised by MediaWiki.
+		// Parsing it routes the markup through Sanitizer while still allowing
+		// wikitext in the label, which plain escaping would not. The insert payload
+		// below is built from the unparsed $input and is unaffected.
 		$show = isset( $args['show'] )
 			? htmlspecialchars( $args['show'] )
 			: $parser->recursiveTagParse( $input, $frame );
@@ -132,9 +131,9 @@ class DDInsert {
 		// If too few parameters, fill with ''
 		$einput[] = '';
 
-		// The payload travels in a data attribute and is picked up by the
-		// delegated click handler in ext.sgPack.js. It used to be an inline
-		// onclick, which required script-src 'unsafe-inline'.
+		// The payload travels in a data attribute and is picked up by the delegated
+		// click handler in ext.sgPack.js, so no inline onclick is needed and the
+		// extension does not require script-src 'unsafe-inline'.
 		return Html::rawElement(
 			'a',
 			[
@@ -240,9 +239,8 @@ class DDInsert {
 	 */
 	private static function ddIOutput( array $block ) {
 		// The mw-sgpack-ddinsert-select class is what the delegated change handler
-		// in ext.sgPack.js binds to; this used to be an inline onchange, which
-		// required script-src 'unsafe-inline'. Resetting the selection back to the
-		// placeholder is handled there too.
+		// in ext.sgPack.js binds to, so no inline onchange is needed. Resetting the
+		// selection back to the placeholder is handled there too.
 		$output = Html::openElement( 'select', [
 			'size' => $block['size'],
 			'name' => $block['name'],

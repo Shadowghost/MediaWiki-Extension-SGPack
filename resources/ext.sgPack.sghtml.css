@@ -1,6 +1,5 @@
 /*
- * Presentation for the two SGHTML features. Both were previously produced by
- * str_replace() over the rendered page body; the background-image URLs are
+ * Presentation for the two SGHTML features. The background-image URLs are
  * configurable and so are emitted as an inline style by SGHTML.php.
  */
 
@@ -18,7 +17,7 @@
  * Show the section edit link as an icon instead of "[edit]".
  *
  * The label text stays in the DOM and is only moved out of view, so screen
- * readers still announce it — replacing the text outright would have dropped it.
+ * readers still announce it.
  */
 .mw-editsection-bracket,
 .mw-editsection-divider {

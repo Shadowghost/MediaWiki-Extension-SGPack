@@ -54,17 +54,17 @@ jobs:
   mediawiki:
     name: phan and parser tests (MediaWiki 1.43)
     runs-on: ubuntu-latest
-    # Both steps below have now been run for real against MediaWiki 1.43.9 on a
-    # local SQLite wiki: phan is clean and the parser tests pass 33/33. What has
-    # still never executed is this job definition itself (core checkout, SQLite
-    # install, MW_INSTALL_PATH wiring) under GitHub Actions, so it stays
-    # non-blocking for one run: trigger it via workflow_dispatch, fix any
-    # plumbing it reports, then delete this line to make it a required check.
+    # Both steps below pass locally against MediaWiki 1.43.9 on a SQLite wiki.
+    # This job definition itself (core checkout, SQLite install, MW_INSTALL_PATH
+    # wiring) has not yet run under GitHub Actions, so it stays non-blocking for
+    # one run: trigger it via workflow_dispatch, fix any plumbing it reports, then
+    # delete this line to make it a required check.
     #
     # The PHP version here matters. Phan 5.5.2 and mediawiki/phan-taint-check-plugin
-    # are not PHP 8.5 compatible - Phan installs an error handler that turns any
-    # deprecation into a crash, and both emit 8.5 deprecations, which ignores
-    # error_reporting. Keep this on a version MediaWiki 1.43 supports (8.1-8.3).
+    # are not PHP 8.5 compatible: Phan installs an error handler that turns any
+    # deprecation into a crash, both emit 8.5 deprecations, and that handler
+    # ignores error_reporting. Keep this on a version MediaWiki 1.43 supports
+    # (8.1-8.3).
     continue-on-error: true
     steps:
       - name: Checkout MediaWiki core

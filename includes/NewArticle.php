@@ -25,8 +25,7 @@ class NewArticle implements
 	 * Load a template page and return its filtered wikitext.
 	 *
 	 * Returns null for a name that is not a valid title, a page that does not
-	 * exist, and a page whose content model is not text-based — all three of
-	 * which previously reached filterPage() or getNativeData() unguarded.
+	 * exist, and a page whose content model is not text-based.
 	 *
 	 * @param string $name Template name, without the namespace prefix
 	 *

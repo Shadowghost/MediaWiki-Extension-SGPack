@@ -15,10 +15,10 @@ use RuntimeException;
  *
  * These deliberately need neither a MediaWiki install nor a database, so they
  * run under `composer test` in plain CI as well as inside MediaWiki's own
- * PHPUnit suite. The cases exist because this extension has shipped every one of
- * these defects at least once: a ResourceLoader module referenced from PHP after
- * it was deleted from extension.json, a message used by code but never defined,
- * and a parser function registered without its magic word.
+ * PHPUnit suite. They guard the couplings nothing else checks: a ResourceLoader
+ * module referenced from PHP but not declared in extension.json, a message used
+ * by code but not defined, and a parser function registered without its magic
+ * word.
  *
  * @coversNothing
  */
@@ -126,14 +126,12 @@ class SGPackStructureTest extends TestCase {
 	}
 
 	/**
-	 * The regression this exists for: SGHTML kept calling
-	 * addModuleStyles( 'ext.sgPack.styles' ) after that module was deleted from
-	 * extension.json, which no other check caught.
+	 * Every ResourceLoader module loaded from PHP must be declared.
 	 *
 	 * Both call shapes have to be matched. OutputPage::addModules() takes a bare
 	 * string, but ParserOutput::addModules() requires an array, so a module loaded
 	 * from a parser hook appears as addModules( [ 'x' ] ) and an
-	 * only-quoted-string pattern would silently skip it.
+	 * only-quoted-string pattern would skip it.
 	 */
 	public function testEveryModuleReferencedFromPhpIsDeclared() {
 		$ext = self::readJson( 'extension.json' );
@@ -197,14 +195,12 @@ class SGPackStructureTest extends TestCase {
 	/**
 	 * Every message the PHP asks for by literal name must exist.
 	 *
-	 * `sghtml-top` was used by SGHTML and defined nowhere, so the tooltip
-	 * rendered as its own key. banana does not catch this: it validates that the
-	 * message files agree with each other, not that the code's messages exist.
+	 * banana does not cover this: it validates that the message files agree with
+	 * each other, not that the code's messages exist.
 	 *
 	 * The second pattern matches the private `error( 'key' )` helpers in
-	 * InlineAudio and UserStatistics. Those pass the key on to wfMessage() through
-	 * a variable, so the wfMessage() pattern alone saw none of their messages -
-	 * six keys across eleven call sites that looked covered and were not.
+	 * InlineAudio and UserStatistics, which pass the key on to wfMessage() through
+	 * a variable and so are invisible to the wfMessage() pattern.
 	 */
 	public function testMessagesUsedInPhpAreDefined() {
 		$english = self::readJson( 'i18n/en.json' );

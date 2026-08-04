@@ -63,9 +63,9 @@ class ParserAdds {
 
 		if ( $pt->exists() ) {
 			// addHeadItem(), not $wgOut->addLink(): a parser function only runs on a
-			// parser-cache miss, so anything written to OutputPage from here silently
-			// disappeared on every cached view. Head items are stored in the
-			// ParserOutput and so survive the cache.
+			// parser-cache miss, so anything written to OutputPage from here would be
+			// absent on a cached view. Head items are stored in the ParserOutput and
+			// so survive the cache.
 			$parser->getOutput()->addHeadItem(
 				Html::element( 'link', [ 'rel' => $rel, 'title' => $title, 'href' => $pt->getFullURL() ] ),
 				// Keyed so repeated calls for the same rel/page collapse instead of
@@ -181,11 +181,10 @@ class ParserAdds {
 				case 'set':
 					$back .= '__TOC__';
 					break;
-				// 'hide' and 'show' are accepted but do nothing. They were implemented
-				// as inline scripts calling addOnloadHook()/util.toggleToc(), neither
-				// of which still exists; the commented-out remains were removed rather
-				// than left to read as recoverable code. The cases stay so that
-				// existing wikitext passing them is not treated as an unknown option.
+				// 'hide' and 'show' are accepted but do nothing: they would need
+				// addOnloadHook()/util.toggleToc(), neither of which exists any more.
+				// The cases stay so that existing wikitext passing them is not treated
+				// as an unknown option.
 				case 'hide':
 				case 'show':
 					break;
@@ -211,14 +210,12 @@ class ParserAdds {
 		$options = $parser->getOptions();
 
 		// Reading the registered option marks this parse as varying by user, so the
-		// parser cache key splits per user. That replaces the previous blanket
-		// updateCacheExpiry( 0 ), which disabled caching entirely for every page
-		// using this function.
+		// parser cache key splits per user rather than the page being excluded from
+		// the cache entirely.
 		$options->getOption( self::USER_PARSER_OPTION );
 
-		// The user the parse is *for*, not RequestContext::getMain()->getUser().
-		// The latter is meaningless during job-queue and refreshLinks re-parses,
-		// which is why this function used to render the wrong user's data.
+		// The user the parse is *for*, not RequestContext::getMain()->getUser():
+		// the latter is meaningless during job-queue and refreshLinks re-parses.
 		$user = $services->getUserFactory()->newFromUserIdentity( $options->getUserIdentity() );
 
 		$arg = strtolower( $arg );
@@ -245,15 +242,13 @@ class ParserAdds {
 				$back = $user->getRealName();
 				break;
 			case 'email':
-				// Deliberately ignores $param. Honouring it loaded an arbitrary
-				// account and rendered its address into the page, so anyone able
-				// to edit could expose any registered user's email to every
-				// viewer. Only the requesting user's own address is available.
+				// Deliberately ignores $param: only the requesting user's own address
+				// is exposed. Honouring a username here would let anyone who can edit
+				// publish any registered user's email address.
 				$back = $user->getEmail();
 				break;
 			case 'skin':
-				// User::getSkin() has not existed for many releases, so this case
-				// was a hard fatal. The user's skin preference is the equivalent.
+				// The user's skin preference; User::getSkin() does not exist.
 				$back = $services->getUserOptionsLookup()->getOption( $user, 'skin' );
 				break;
 			case 'home':
@@ -272,8 +267,6 @@ class ParserAdds {
 						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
 					}
 				}
-				// getUserPage()->getTalkNsText() . getName() produced
-				// "[[User talkFoo]]" — the namespace text carries no colon.
 				$back = '[[' . $user->getTalkPage()->getFullText() . ']]';
 				break;
 			case 'groups':
@@ -337,8 +330,6 @@ class ParserAdds {
 	 */
 	public static function sgPackRecursive( $parser, $calltemplate = '', $text = '' ) {
 		// Weitere Übergabeparameter vorbereiten
-		// $p was never defined, so every parameter past $text was dropped. isset()
-		// on an undefined variable does not warn, which is why this went unnoticed.
 		$p = func_get_args();
 		$callparameter = '';
 		$i = 3;

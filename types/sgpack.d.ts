@@ -3,9 +3,9 @@
  *
  * `mw.SGPack` is not part of MediaWiki, so types-mediawiki does not know about
  * it and assigning to it is a type error without this augmentation. Declaring it
- * here rather than silencing the error keeps the public API written down in one
- * place — wiki content and gadgets call these three functions directly, so their
- * signatures are a compatibility surface.
+ * here keeps the public API written down in one place — wiki content and gadgets
+ * call these three functions directly, so their signatures are a compatibility
+ * surface.
  */
 
 declare global {

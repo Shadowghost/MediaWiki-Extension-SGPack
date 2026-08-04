@@ -17,11 +17,10 @@ use MediaWiki\Title\Title;
 /**
  * <audioplay file="Clip.oga">label</audioplay> - a play control sized to fit a line of prose.
  *
- * Deliberately never emits `controls`. Handing rendering to the browser draws a
- * transport bar tens of pixels tall, which inflates the line box and is why the
- * original attempt at this feature was abandoned. An <audio> element without
- * `controls` renders nothing at all, so it serves purely as a playback engine
- * while the visible control is a 1em glyph drawn in CSS.
+ * Deliberately never emits `controls`: that hands rendering to the browser, which
+ * draws a transport bar tens of pixels tall and inflates the line box. An <audio>
+ * element without `controls` renders nothing at all, so it serves purely as a
+ * playback engine while the visible control is a 1em glyph drawn in CSS.
  *
  * The server emits a plain link to the file description page; ext.sgPack.audio
  * upgrades it in place. Without JavaScript, or for a format the browser cannot
@@ -49,11 +48,10 @@ class InlineAudio {
 	/**
 	 * Expand template parameters and templates inside a tag attribute.
 	 *
-	 * MediaWiki hands setHook() callbacks the *raw* attribute text, so an
-	 * attribute written as file="{{{1}}}" inside a template arrives literally as
-	 * "{{{1}}}" and has to be expanded against the frame. Tag content is different
-	 * — recursiveTagParse() already expands that — which is why this is easy to
-	 * miss until the tag is used from a template.
+	 * MediaWiki hands setHook() callbacks the *raw* attribute text, so an attribute
+	 * written as file="{{{1}}}" inside a template arrives literally as "{{{1}}}" and
+	 * has to be expanded against the frame. Tag content is different:
+	 * recursiveTagParse() already expands that.
 	 *
 	 * @param string $value Raw attribute value
 	 * @param Parser $parser
@@ -106,8 +104,7 @@ class InlineAudio {
 
 		// Register the file as a dependency of this parse even when it does not
 		// exist yet, so that uploading, re-uploading or deleting it purges the
-		// pages referring to it. Same class of bug as carray not calling
-		// addTemplate().
+		// pages referring to it.
 		$file = MediaWikiServices::getInstance()->getRepoGroup()->findFile( $title );
 		$parserOutput->addImage(
 			$title->getDBkey(),
@@ -188,13 +185,11 @@ class InlineAudio {
 			] );
 		}
 
-		// Parsed, never raw: tag-hook return values are not sanitised by MediaWiki,
-		// which is how <ddbutton>'s label became an XSS.
+		// Parsed, never raw: tag-hook return values are not sanitised by MediaWiki.
 		//
 		// Emptiness has to be judged *after* expanding. A template passing a label
 		// through as <audioplay …>{{{text|}}}</audioplay> hands us the literal
-		// "{{{text|}}}", which is not empty, so testing the raw content emitted an
-		// empty label span for every unlabelled control.
+		// "{{{text|}}}", which is not empty.
 		$label = '';
 		if ( $input !== null && trim( $input ) !== '' ) {
 			$label = trim( $parser->recursiveTagParse( trim( $input ), $frame ) );

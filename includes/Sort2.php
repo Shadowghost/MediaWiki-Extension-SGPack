@@ -44,9 +44,8 @@ class Sort2 {
 	/**
 	 * Whether the documented `style=` attribute is honoured.
 	 *
-	 * This was declared and never assigned, so `$this->allowStyles == true` was
-	 * always false and `style=` had in fact never worked. Values are escaped by
-	 * Html::openElement() and filtered by Sanitizer::checkCss() in loadSettings().
+	 * Values are escaped by Html::openElement() and filtered by
+	 * Sanitizer::checkCss() in loadSettings().
 	 *
 	 * @var bool
 	 */
@@ -97,9 +96,8 @@ class Sort2 {
 		if ( isset( $settings['casesense'] ) && strtolower( $settings['casesense'] ) == "true" ) {
 			$this->casesense = "true";
 		}
-		// Both of these used to be interpolated into the start tag raw. They are
-		// stored as plain values now and escaped by Html::openElement() in
-		// makeList(); CSS additionally goes through Sanitizer::checkCss().
+		// Stored as plain values and escaped by Html::openElement() in makeList();
+		// CSS additionally goes through Sanitizer::checkCss().
 		if ( isset( $settings['style'] ) && $this->allowStyles ) {
 			$this->style = Sanitizer::checkCss( $settings['style'] );
 		}
@@ -132,9 +130,8 @@ class Sort2 {
 	private function internalSort( $text ) {
 		$lines = explode( "\n", $text );
 
-		// Map line *index* to sort key. This used to be keyed by the line content
-		// itself ( $inter[$line] = ... ), which silently collapsed identical
-		// entries — a list with two equal lines came back with one.
+		// Map line *index* to sort key, not the line content: keying by content
+		// would collapse identical entries.
 		$keys = [];
 		foreach ( $lines as $index => $line ) {
 			$keys[$index] = $this->stripWikiTokens( $line );
@@ -255,7 +252,6 @@ class Sort2 {
 	private function parse( $text ) {
 		// recursiveTagParse(), not Parser::parse(): re-entering a full parse from
 		// inside a tag hook can corrupt the state of the parse already in progress.
-		// The tag hook already receives the frame, which this class used to discard.
 		return $this->parser->recursiveTagParse( $text, $this->frame );
 	}
 }

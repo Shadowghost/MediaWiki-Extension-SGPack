@@ -5,12 +5,7 @@
  */
 /* eslint-disable no-jquery/no-global-selector */
 ( function () {
-	// The textbox an insert should go to.
-	//
-	// This used to be set up inside insert(), which registered a fresh
-	// $( document ).on( 'focus', … ) handler on *every* invocation — and did so
-	// after reading the value the handler was meant to supply. Binding once at
-	// init fixes both the leak and the ordering.
+	// The textbox an insert should go to. Bound once at init, not per insert.
 	let $currentFocused = $( '#wpTextbox1' );
 
 	/**
@@ -63,9 +58,8 @@
 			$currentFocused = $( this ).is( '.CodeMirror' ) ? $( '#wpTextbox1' ) : $( this );
 		} );
 
-		// These two delegated handlers replace the inline onclick/onchange
-		// attributes the PHP used to emit, which required script-src
-		// 'unsafe-inline'. Delegation from the document also means markup added
+		// Delegated from the document rather than inline onclick/onchange
+		// attributes, so no script-src 'unsafe-inline' is needed and markup added
 		// later — live preview, for instance — works without re-binding.
 		$( document ).on( 'click', '.mw-sgpack-ddinsert-button', function ( e ) {
 			e.preventDefault();
@@ -81,8 +75,8 @@
 		} );
 	} );
 
-	// Still exposed: wiki content may call these directly, and it is the
-	// documented entry point. The extension's own markup no longer needs it.
+	// Exposed for wiki content that calls these directly; the extension's own
+	// markup does not need it.
 	mw.SGPack = {
 		rawdecode: rawdecode,
 		insert: insert,
