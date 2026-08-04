@@ -8,18 +8,21 @@
 
 namespace MediaWiki\Extension\SGPack;
 
-use ExtensionRegistry;
 use MediaWiki\Hook\SkinTemplateNavigation__UniversalHook;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Registration\ExtensionRegistry;
+use MediaWiki\SpecialPage\SpecialPage;
 use MediaWiki\User\Hook\UserLogoutHook;
-use SpecialPage;
+use MediaWiki\User\User;
 
 class AddWhosOnline implements
 	SkinTemplateNavigation__UniversalHook,
 	UserLogoutHook
 {
 	/**
-	 * @param SkinTemplate $sktemplate
+	 * SkinTemplate is not namespaced in MediaWiki 1.43, hence the leading backslash.
+	 *
+	 * @param \SkinTemplate $sktemplate
 	 * @param array &$links
 	 */
 	public function onSkinTemplateNavigation__Universal( $sktemplate, &$links ): void {

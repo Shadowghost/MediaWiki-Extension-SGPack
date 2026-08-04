@@ -1,0 +1,53 @@
+/*
+ * Presentation for the two SGHTML features. Both were previously produced by
+ * str_replace() over the rendered page body; the background-image URLs are
+ * configurable and so are emitted as an inline style by SGHTML.php.
+ */
+
+/* Jump-to-top link, inserted into each section heading by ext.sgPack.sghtml.js */
+.mw-sgpack-top {
+	float: right;
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+}
+
+/*
+ * Show the section edit link as an icon instead of "[edit]".
+ *
+ * The label text stays in the DOM and is only moved out of view, so screen
+ * readers still announce it — replacing the text outright would have dropped it.
+ */
+.mw-editsection-bracket,
+.mw-editsection-divider {
+	display: none;
+}
+
+.mw-editsection a {
+	display: inline-block;
+	/* Fixed px, not em: the shipped icons are 16x16, so a 16px box renders them
+	   1:1. An em-based box lands on fractional pixels and looks blurry. */
+	width: 16px;
+	height: 16px;
+	overflow: hidden;
+	text-indent: 100%;
+	white-space: nowrap;
+	vertical-align: text-bottom;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+}
+
+/*
+ * With VisualEditor installed a section has *two* edit links - "edit" and "edit
+ * source" - separated by a divider. Styling both would put two identical pencils
+ * next to every heading, so only the first becomes an icon and the rest are
+ * hidden. The previous implementation deleted the "edit source" label outright,
+ * so this keeps that behaviour; drop this rule if you would rather expose the
+ * source-edit link as well.
+ */
+.mw-editsection a ~ a {
+	display: none;
+}

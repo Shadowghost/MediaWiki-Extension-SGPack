@@ -9,57 +9,68 @@
 namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Hook\BeforePageDisplayHook;
+use MediaWiki\Output\OutputPage;
 
 class SGHTML implements
 	BeforePageDisplayHook
 {
 	/**
-	 * @param OutPage $out
-	 * @param Skin $skin
+	 * Wrap a URL in a CSS url() value, escaped as a quoted CSS string.
+	 *
+	 * The icon paths are admin-controlled configuration rather than user input,
+	 * but they are still interpolated into a stylesheet, so escape them properly
+	 * instead of trusting them — a stray quote would otherwise end the
+	 * declaration.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	private static function cssUrl( $url ) {
+		return 'url("' . strtr( $url, [
+			'\\' => '\\\\',
+			'"' => '\\"',
+			"\n" => '\\A ',
+			"\r" => '',
+		] ) . '")';
+	}
+
+	/**
+	 * Skin is not namespaced in MediaWiki 1.43, hence the leading backslash.
+	 *
+	 * @param OutputPage $out
+	 * @param \Skin $skin
 	 */
 	public function onBeforePageDisplay( $out, $skin ): void {
-		global $wgSGHTMLImageTop, $wgSGHTMLImageEdit;
+		$title = $out->getTitle();
+		if ( !$title ) {
+			return;
+		}
 
-		// Replace correspoding elements with jump-to-top and edit images
-		$jumpToTop = '<a href="javascript:window.scrollTo(0,0);" title="' . wfMessage( 'sghtml-top' ) . '" style="vertical-align: top; float: right;"><img src="' . $wgSGHTMLImageTop . '" alt="^" /></a>';
-		$editIcon = '<img src="' . $wgSGHTMLImageEdit . '" alt="[' . wfMessage( 'edit' ) . ']" style="vertical-align:text-bottom;" />';
-		$suchen = [
-			'<h2><span class="mw-headline"',
-			'<h3><span class="mw-headline"',
-			'<h4><span class="mw-headline"',
-			'<h5><span class="mw-headline"',
-			'<h6><span class="mw-headline"',
-			'<span>' . wfMessage( 'edit' ) . '</span></a>',
-			'>' . wfMessage( 'edit' ) . '</a><span class="mw-editsection-divider">',
-			'>' . wfMessage( 'edit' ) . '</a>',
-			'[ <a href=',
-			'<span class="mw-editsection-bracket"> ]</small></small></span>',
-			'<span style="white-space:nowrap">[ ',
-			'</span> ]</span>',
-			'<span class="mw-editsection-bracket">[</span>',
-			'<span class="mw-editsection-bracket"> | </span>',
-			'<span class="mw-editsection-bracket">]</span>',
-			wfMessage( 'visualeditor-ca-editsource-section' )
-		];
-		$ersatz = [
-			'<h2>' . $jumpToTop . '<span class="mw-headline"',
-			'<h3>' . $jumpToTop . '<span class="mw-headline"',
-			'<h4>' . $jumpToTop . '<span class="mw-headline"',
-			'<h5>' . $jumpToTop . '<span class="mw-headline"',
-			'<h6>' . $jumpToTop . '<span class="mw-headline"',
-			$editIcon . '</a>',
-			'>' . $editIcon . '</a><span class="mw-editsection-bracket">',
-			'>' . $editIcon . '</a><span class="mw-editsection-bracket">',
-			'<a href=',
-			'</small></small>',
-			'<span style="white-space:nowrap">',
-			'</span></span>'
-		];
-		$out->mBodytext = str_replace( $suchen, $ersatz, $out->mBodytext );
+		// Section edit icons and the jump-to-top links.
+		//
+		// This used to be 16 str_replace() passes over the entire body HTML on
+		// every page view, matching against localised wfMessage( 'edit' ) output
+		// and skin-generated mw-headline/mw-editsection-* markup that MediaWiki
+		// core has since changed — so it had largely stopped working. Both
+		// features are purely presentational: the edit-icon swap is CSS on
+		// .mw-editsection, and the jump-to-top link is inserted by a small
+		// ResourceLoader module, which is the only part that genuinely needs an
+		// element to exist.
+		$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
+		$out->addModules( 'ext.sgPack.sghtml' );
+
+		// The two icon paths are configurable, so they cannot live in the static
+		// stylesheet; everything else about these rules does.
+		$config = $out->getConfig();
+		$out->addInlineStyle(
+			'.mw-sgpack-top{background-image:' . self::cssUrl( $config->get( 'SGPackImageTop' ) ) . '}'
+			. '.mw-editsection a{background-image:' . self::cssUrl( $config->get( 'SGPackImageEdit' ) ) . '}'
+		);
 
 		// Load SGPack specific JS and CSS
 		if (
-			$out->getTitle()->isSpecial( 'Upload' ) || in_array( $out->getActionName(), [ 'edit', 'submit' ] )
+			$title->isSpecial( 'Upload' ) || in_array( $out->getActionName(), [ 'edit', 'submit' ] )
 		) {
 			$out->addModules( 'ext.sgPack' );
 		}

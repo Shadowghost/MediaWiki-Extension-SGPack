@@ -8,7 +8,7 @@
 
 namespace MediaWiki\Extension\SGPack;
 
-use ContentHandler;
+use MediaWiki\Content\ContentHandler;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
@@ -163,9 +163,10 @@ class CacheArray {
 					$output = str_replace( '{{K}}', $key, $cache[$cnumber]['#default'] );
 				}
 				break;
-			case 'w': // Only create new carray
+			// w/write only create a new carray; rw/readwrite also read one value
+			case 'w':
 			case 'write':
-			case 'rw': // Write new carray and read one value
+			case 'rw':
 			case 'readwrite':
 				// Read key (only if readwrite)
 				if ( ( $action === 'rw' ) || ( $action === 'readwrite' ) ) {
@@ -189,7 +190,8 @@ class CacheArray {
 					break;
 				}
 				// Fall through: rw/readwrite writes the carray and then reads one value
-			case 'r': // Read value out of carray
+			// Read value out of carray
+			case 'r':
 			case 'read':
 				// Read key, if not already set by action readwrite
 				if ( !isset( $key ) ) {
@@ -202,16 +204,19 @@ class CacheArray {
 					$output = str_replace( '{{K}}', $key, $cache[$cnumber]['#default'] );
 				}
 				break;
-			case 'd': // Delete carray
+			// Delete carray
+			case 'd':
 			case 'delete':
 				unset( $cache[$cnumber] );
 				break;
-			case 'c': // Count elements in carray
+			// Count elements in carray
+			case 'c':
 			case 'count':
 				// count( null ) is a TypeError on PHP 8, so an unset carray counts as 0
 				$output = isset( $cache[$cnumber] ) ? count( $cache[$cnumber] ) : 0;
 				break;
-			case 'u': // Test if cache is used
+			// Test if cache is used
+			case 'u':
 			case 'used':
 				// If carray is used give size
 				if ( isset( $cache[$cnumber] ) ) {

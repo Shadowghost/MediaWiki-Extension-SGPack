@@ -10,8 +10,8 @@ namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Hook\ParserFirstCallInitHook;
 use MediaWiki\Hook\ParserOptionsRegisterHook;
-use Parser;
-use ParserOptions;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Parser\ParserOptions;
 
 class Hooks implements
 	ParserFirstCallInitHook,

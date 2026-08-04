@@ -10,6 +10,8 @@ namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Parser\PPFrame;
 use MediaWiki\Parser\Sanitizer;
 
 class DDInsert {
@@ -95,7 +97,7 @@ class DDInsert {
 		// If no show parameter is given use input also as showText
 		$show = isset( $args['show'] ) ? htmlspecialchars( $args['show'] ) : $input;
 		// Get sampleText if given
-		$sample = isset( $args['sample'] ) ? $args['sample'] : '';
+		$sample = $args['sample'] ?? '';
 		// Picture
 		if ( isset( $args['picture'] ) ) {
 			$image = MediaWikiServices::getInstance()->getRepoGroup()->findFile( $args['picture'] );
@@ -109,17 +111,30 @@ class DDInsert {
 				if ( isset( $args['iheight'] ) ) {
 					$iheight = intval( $args['iheight'] );
 				}
-				$show = '<img src="' . $image->getURL() . '" width="' . $iwidth . '" height="' . $iheight . '" />';
+				$show = Html::element( 'img', [
+					'src' => $image->getURL(),
+					'width' => $iwidth,
+					'height' => $iheight,
+				] );
 			}
 		}
 		// Split parameter
 		$einput = explode( '+', $input );
 		// If too few parameters, fill with ''
 		$einput[] = '';
-		$output = '<a class="mw-sgpack-ddinsert-button" href="#" onclick="';
-		$output .= "mw.SGPack.insert('" . self::sgpEncode( $einput[0] . "+" . $einput[1] . "+" . $sample ) . "'); ";
-		$output .= 'return false;">' . $show . '</a>';
-		return $output;
+
+		// The payload travels in a data attribute and is picked up by the
+		// delegated click handler in ext.sgPack.js. It used to be an inline
+		// onclick, which required script-src 'unsafe-inline'.
+		return Html::rawElement(
+			'a',
+			[
+				'class' => 'mw-sgpack-ddinsert-button',
+				'href' => '#',
+				'data-mw-sgpack-insert' => self::sgpEncode( $einput[0] . "+" . $einput[1] . "+" . $sample ),
+			],
+			$show
+		);
 	}
 
 	/**
@@ -215,18 +230,24 @@ class DDInsert {
 	 * @return string
 	 */
 	private static function ddIOutput( array $block ) {
-		$output = '';
-		$output .= '<select size="' . $block['size'] . '" name="' . $block['name'] . '"';
-		$output .= ' onchange="';
-		$output .= 'mw.SGPack.insertSelect(this); this.options.selectedIndex = 0; ';
-		$output .= 'return false;">';
-		$output .= '<option value="++" selected="selected">';
-		$output .= $block['title'];
-		$output .= '</option>';
+		// The mw-sgpack-ddinsert-select class is what the delegated change handler
+		// in ext.sgPack.js binds to; this used to be an inline onchange, which
+		// required script-src 'unsafe-inline'. Resetting the selection back to the
+		// placeholder is handled there too.
+		$output = Html::openElement( 'select', [
+			'size' => $block['size'],
+			'name' => $block['name'],
+			'class' => 'mw-sgpack-ddinsert-select',
+		] );
+		$output .= Html::element(
+			'option',
+			[ 'value' => '++', 'selected' => 'selected' ],
+			$block['title']
+		);
 		foreach ( $block['values'] as $values ) {
 			$output .= self::ddILine( $block, $values['text'], $values['value'], $values['image'] );
 		}
-		$output .= "</select>";
+		$output .= Html::closeElement( 'select' );
 		return $output;
 	}
 
@@ -241,15 +262,15 @@ class DDInsert {
 	 * @return string
 	 */
 	private static function ddILine( array $block, $text, $value, $image ) {
+		$attribs = [ 'value' => self::sgpEncode( $value ) ];
 		if ( $block['pwidth'] > 0 ) {
+			$css = 'padding-left: ' . $block['pwidth'] . 'px; padding-right: 5px;';
 			if ( !empty( $image ) ) {
-				$css = 'style="height: ' . $block['pheight'] . 'px; padding-left: ' . $block['pwidth'] . 'px; padding-right: 5px; background-repeat: no-repeat; background-image: url(' . $image . ');"';
-			} else {
-				$css = 'style="padding-left: ' . $block['pwidth'] . 'px; padding-right: 5px;"';
+				$css = 'height: ' . $block['pheight'] . 'px; ' . $css
+					. ' background-repeat: no-repeat; background-image: url(' . $image . ');';
 			}
-		} else {
-			$css = '';
+			$attribs['style'] = $css;
 		}
-		return '<option ' . $css . ' value="' . self::sgpEncode( $value ) . '">' . $text . '</option>' . "\n";
+		return Html::element( 'option', $attribs, $text ) . "\n";
 	}
 }

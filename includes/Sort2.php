@@ -9,53 +9,37 @@
 namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Html\Html;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Parser\PPFrame;
 use MediaWiki\Parser\Sanitizer;
 
 class Sort2 {
-	/**
-	 * @var Parser
-	 */
-	var $parser;
+	/** @var Parser */
+	private $parser;
 
-	/**
-	 * @var PPFrame
-	 */
-	var $frame;
+	/** @var PPFrame */
+	private $frame;
 
-	/**
-	 * @var string
-	 */
-	var $order;
+	/** @var string */
+	private $order = 'asc';
 
-	/**
-	 * @var string
-	 */
-	var $type;
+	/** @var string */
+	private $type = 'ul';
 
-	/**
-	 * @var string
-	 */
-	var $separator;
+	/** @var string */
+	private $separator = "\n";
 
-	/**
-	 * @var string
-	 */
-	var $casesense;
+	/** @var string */
+	private $casesense = "false";
 
-	/**
-	 * @var string
-	 */
-	var $style;
+	/** @var string */
+	private $style = "";
 
-	/**
-	 * @var int|null
-	 */
-	var $start;
+	/** @var int|null */
+	private $start = null;
 
-	/**
-	 * @var string
-	 */
-	var $title;
+	/** @var string */
+	private $title = "";
 
 	/**
 	 * Whether the documented `style=` attribute is honoured.
@@ -66,23 +50,15 @@ class Sort2 {
 	 *
 	 * @var bool
 	 */
-	var $allowStyles;
+	private $allowStyles = true;
 
 	/**
 	 * @param Parser $parser
 	 * @param PPFrame $frame
 	 */
-	function __construct( $parser, $frame ) {
+	public function __construct( $parser, $frame ) {
 		$this->parser = $parser;
 		$this->frame = $frame;
-		$this->order = 'asc';
-		$this->type = 'ul';
-		$this->separator = "\n";
-		$this->casesense = "false";
-		$this->style = "";
-		$this->start = null;
-		$this->title = "";
-		$this->allowStyles = true;
 	}
 
 	/**

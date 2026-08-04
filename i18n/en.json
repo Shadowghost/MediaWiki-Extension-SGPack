@@ -5,8 +5,8 @@
 		]
 	},
 	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Extnds the parser with <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> and <code>#in</code>.<br/>• <b>DDInsert</b>: Insert text and pictures with buttons, text or dropdown list. Create JSButton<br/>• <b>NewArticle</b>: Select article template when creating a new article.<br/>• <b>AddWhosOnline</b>: Remove user from WhosOnline when logged out, add entry to personal menu.<br/>• <b>CacheArray</b>: Array function for templates - uses cache for speed.• <b>Sort2</b>: Create sorted lists.",
-	"sgpack-sghtml-image-edit-desc": "The edit icon",
-	"sgpack-sghtml-image-top-desc": "The icon for getting to the top of the site",
+	"sgpack-image-edit-desc": "The edit icon",
+	"sgpack-image-top-desc": "The icon for getting to the top of the site",
 	"sghtml-top": "Back to top",
 	"ddinsert-selecttitle": "[ select ]",
 	"newarticle-selecttitle": "[ select ]",

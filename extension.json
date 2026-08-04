@@ -67,26 +67,40 @@
 				"jquery.textSelection"
 			],
 			"scripts": [
-				"index.js"
+				"ext.sgPack.js"
 			],
 			"styles": [
-				"index.css"
+				"ext.sgPack.css"
+			]
+		},
+		"ext.sgPack.sghtml": {
+			"scripts": [
+				"ext.sgPack.sghtml.js"
+			],
+			"messages": [
+				"sghtml-top"
+			]
+		},
+		"ext.sgPack.sghtml.styles": {
+			"styles": [
+				"ext.sgPack.sghtml.css"
 			]
 		}
 	},
+	"config_prefix": "wgSGPack",
 	"config": {
-		"SGHTMLImageTop": {
+		"ImageTop": {
 			"value": "/extensions/SGPack/resources/arrow-up-icon.png",
 			"path": false,
 			"description": "The icon for getting to the top of the site",
-			"descriptionmsg": "sgpack-sghtml-image-top-desc",
+			"descriptionmsg": "sgpack-image-top-desc",
 			"public": true
 		},
-		"SGHTMLImageEdit": {
+		"ImageEdit": {
 			"value": "/extensions/SGPack/resources/pencil-edit-icon.png",
 			"path": false,
 			"description": "The edit icon",
-			"descriptionmsg": "sgpack-sghtml-image-edit-desc",
+			"descriptionmsg": "sgpack-image-edit-desc",
 			"public": true
 		}
 	},

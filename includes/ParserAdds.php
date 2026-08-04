@@ -8,11 +8,12 @@
 
 namespace MediaWiki\Extension\SGPack;
 
-use ExtensionRegistry;
+use MediaWiki\Context\RequestContext;
 use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
-use RequestContext;
-use Title;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Registration\ExtensionRegistry;
+use MediaWiki\Title\Title;
 
 class ParserAdds {
 
@@ -171,19 +172,13 @@ class ParserAdds {
 				case 'set':
 					$back .= '__TOC__';
 					break;
+				// 'hide' and 'show' are accepted but do nothing. They were implemented
+				// as inline scripts calling addOnloadHook()/util.toggleToc(), neither
+				// of which still exists; the commented-out remains were removed rather
+				// than left to read as recoverable code. The cases stay so that
+				// existing wikitext passing them is not treated as an unknown option.
 				case 'hide':
-					// $wgOut->addInlineScript("function tocHide() { if(document.getElementById('toc')) { var toc = document.getElementById('toc').getElementsByTagName('ul')[0]; var toggleLink = document.getElementById('togglelink'); if(toc.style.display != 'none') { changeText(toggleLink, tocShowText); toc.style.display = 'none'; }}} addOnloadHook(tocHide);");
-					/*$wgOut->addInlineScript("$(function() {
-					  var $tocList = $('#toc ul:first');
-					  if($tocList.length()) {
-						if(!$tocList.is(':hidden')) {
-						  util.toggleToc($('#togglelink'));
-						}
-					  }
-					});");*/
-					break;
 				case 'show':
-					// $wgOut->addInlineScript("function tocShow() { if(document.getElementById('toc')) { var toc = document.getElementById('toc').getElementsByTagName('ul')[0]; var toggleLink = document.getElementById('togglelink'); if(toc.style.display != 'block') { changeText(toggleLink, tocHideText); toc.style.display = 'block'; }}} addOnloadHook(tocShow);");
 					break;
 				case 'force':
 					$back .= '__FORCETOC__';
@@ -338,12 +333,14 @@ class ParserAdds {
 		// Alle Elemente parsen
 		foreach ( $split as $para ) {
 			if ( $para[0] == '(' && $para[strlen( $para ) - 1] == ')' ) {
-				$sub = substr( $para, 1, strlen( $para ) - 2 ); // "Ausklammern"
+				// "Ausklammern"
+				$sub = substr( $para, 1, strlen( $para ) - 2 );
 			} else {
 				$sub = $para;
 			}
 
-			$ask = '{{' . $calltemplate . '|' . $sub . $callparameter . '}}';  // Erzeuge Anfrage
+			// Erzeuge Anfrage
+			$ask = '{{' . $calltemplate . '|' . $sub . $callparameter . '}}';
 			$result = $parser->recursiveTagParse( $ask );
 
 			// Wenn Ergebnis == leer oder == Anfrage dann kennt die Vorlage den Parameter nicht
