@@ -323,10 +323,9 @@ wgSGPackAudioSeekBar=true
 </p>
 !! end
 
-# Template use is the case both attribute and content expansion were broken for:
 # setHook() hands the callback raw attribute text and raw tag content, so a
-# template passing file="{{{1}}}" arrived literally and had to be expanded
-# against the frame.
+# template passing file="{{{1}}}" arrives literally and has to be expanded
+# against the frame. These cases cover that.
 !! article
 Template:Audioplay
 !! text
@@ -368,5 +367,98 @@ wgSGPackAudioSeekBar=true
 {{Audioplay|Audio.oga}}
 !! html/php
 <p><span class="mw-sgpack-audio mw-sgpack-audio-seekable"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="1"><span class="mw-sgpack-audio-icon"></span></a><input class="mw-sgpack-audio-seek" type="range" min="0" max="0" value="0" step="any" disabled="" aria-label="Audio position" /></span>
+</p>
+!! end
+
+# User statistics. Only the deterministic paths are covered here: a count depends
+# on which users and revisions the parser-test database happens to contain, and a
+# date on when the test ran, so the error paths are all that can be asserted
+# without pinning fixture data that the test runner does not guarantee.
+#
+# Unlike the rest of this file, these expectations have NOT been executed - see
+# IMPROVEMENT_PLAN.md. Suspect the fixture before the code if one fails.
+
+!! test
+useredit: no user name given
+!! wikitext
+x<useredit/>y
+!! html/php
+<p>x<strong class="error">user statistics: no user name given</strong>y
+</p>
+!! end
+
+!! test
+useredit: unknown user
+!! wikitext
+x<useredit>NoSuchAccountHere</useredit>y
+!! html/php
+<p>x<strong class="error">user statistics: unknown user NoSuchAccountHere</strong>y
+</p>
+!! end
+
+!! test
+usercreate: unknown user
+!! wikitext
+x<usercreate>NoSuchAccountHere</usercreate>y
+!! html/php
+<p>x<strong class="error">user statistics: unknown user NoSuchAccountHere</strong>y
+</p>
+!! end
+
+!! test
+usercreate: unknown user in all-namespaces mode
+!! wikitext
+x<usercreate all>NoSuchAccountHere</usercreate>y
+!! html/php
+<p>x<strong class="error">user statistics: unknown user NoSuchAccountHere</strong>y
+</p>
+!! end
+
+!! test
+usereditfirst: no user name given
+!! wikitext
+x<usereditfirst/>y
+!! html/php
+<p>x<strong class="error">user statistics: no user name given</strong>y
+</p>
+!! end
+
+!! test
+usereditlast: unknown user
+!! wikitext
+x<usereditlast>NoSuchAccountHere</usereditlast>y
+!! html/php
+<p>x<strong class="error">user statistics: unknown user NoSuchAccountHere</strong>y
+</p>
+!! end
+
+!! test
+useredittopten: argument that is neither a number nor all
+!! wikitext
+x<useredittopten>twenty</useredittopten>y
+!! html/php
+<p>x<strong class="error">useredittopten: twenty is neither a number nor all</strong>y
+</p>
+!! end
+
+!! test
+useredittopten: zero is not a list length
+!! wikitext
+x<useredittopten>0</useredittopten>y
+!! html/php
+<p>x<strong class="error">useredittopten: 0 is neither a number nor all</strong>y
+</p>
+!! end
+
+# The name is escaped on its way into the error message, so markup in it is inert.
+# Html::element() escapes `&` and `<`; the `>` is escaped afterwards, because a tag
+# hook registered with setHook() gets a `general` strip marker and its output
+# therefore still passes through Sanitizer.
+!! test
+useredit: markup in an unknown user name is escaped
+!! wikitext
+x<useredit><script>alert(1)</script></useredit>y
+!! html/php
+<p>x<strong class="error">user statistics: unknown user &lt;script&gt;alert(1)&lt;/script&gt;</strong>y
 </p>
 !! end

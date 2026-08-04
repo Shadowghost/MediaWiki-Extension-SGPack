@@ -200,13 +200,20 @@ class SGPackStructureTest extends TestCase {
 	 * `sghtml-top` was used by SGHTML and defined nowhere, so the tooltip
 	 * rendered as its own key. banana does not catch this: it validates that the
 	 * message files agree with each other, not that the code's messages exist.
+	 *
+	 * The second pattern matches the private `error( 'key' )` helpers in
+	 * InlineAudio and UserStatistics. Those pass the key on to wfMessage() through
+	 * a variable, so the wfMessage() pattern alone saw none of their messages -
+	 * six keys across eleven call sites that looked covered and were not.
 	 */
 	public function testMessagesUsedInPhpAreDefined() {
 		$english = self::readJson( 'i18n/en.json' );
 
 		foreach ( self::phpSources() as $file ) {
-			preg_match_all( "/wfMessage\(\s*'([^']+)'/", file_get_contents( $file ), $matches );
-			foreach ( $matches[1] as $message ) {
+			$source = file_get_contents( $file );
+			preg_match_all( "/wfMessage\(\s*'([^']+)'/", $source, $direct );
+			preg_match_all( "/\berror\(\s*'([^']+)'/", $source, $viaHelper );
+			foreach ( array_merge( $direct[1], $viaHelper[1] ) as $message ) {
 				// Messages owned by MediaWiki core or another extension
 				if ( !str_starts_with( $message, 'sgpack' )
 					&& !str_starts_with( $message, 'sghtml' )

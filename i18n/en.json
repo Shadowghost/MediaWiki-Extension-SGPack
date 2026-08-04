@@ -4,10 +4,14 @@
 			"Shadowghost"
 		]
 	},
-	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Extnds the parser with <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> and <code>#in</code>.<br/>• <b>DDInsert</b>: Insert text and pictures with buttons, text or dropdown list. Create JSButton<br/>• <b>NewArticle</b>: Select article template when creating a new article.<br/>• <b>AddWhosOnline</b>: Remove user from WhosOnline when logged out, add entry to personal menu.<br/>• <b>CacheArray</b>: Array function for templates - uses cache for speed.• <b>Sort2</b>: Create sorted lists.",
+	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Extnds the parser with <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> and <code>#in</code>.<br/>• <b>DDInsert</b>: Insert text and pictures with buttons, text or dropdown list. Create JSButton<br/>• <b>NewArticle</b>: Select article template when creating a new article.<br/>• <b>AddWhosOnline</b>: Remove user from WhosOnline when logged out, add entry to personal menu.<br/>• <b>CacheArray</b>: Array function for templates - uses cache for speed.• <b>Sort2</b>: Create sorted lists.<br/>• <b>UserStatistics</b>: Edit counts, page creation counts and first/last edit dates inside running text.",
 	"sgpack-image-edit-desc": "The edit icon",
 	"sgpack-image-top-desc": "The icon for getting to the top of the site",
 	"sgpack-audio-seekbar-desc": "Whether inline audio controls show a seek bar",
+	"sgpack-userstats-cacheexpiry-desc": "How long, in seconds, a page showing user statistics may be served from the parser cache",
+	"sgpack-userstats-nouser": "user statistics: no user name given",
+	"sgpack-userstats-unknownuser": "user statistics: unknown user $1",
+	"sgpack-userstats-badcount": "useredittopten: $1 is neither a number nor all",
 	"sgpack-audio-play": "Play $1",
 	"sgpack-audio-stop": "Stop $1",
 	"sgpack-audio-seek": "Audio position",

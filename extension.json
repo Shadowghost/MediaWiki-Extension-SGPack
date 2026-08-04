@@ -118,6 +118,12 @@
 			"descriptionmsg": "sgpack-image-edit-desc",
 			"public": true
 		},
+		"UserStatisticsCacheExpiry": {
+			"value": 3600,
+			"description": "How long, in seconds, a page using the user statistics tags (<useredit>, <usercreate>, <useredittopten>, <usereditfirst>, <usereditlast>) may be served from the parser cache. 0 keeps such pages out of the parser cache entirely, which is what the original UserStatistics extension did.",
+			"descriptionmsg": "sgpack-userstats-cacheexpiry-desc",
+			"public": true
+		},
 		"AudioSeekBar": {
 			"value": false,
 			"description": "Show a seek bar on inline <audioplay> controls. Off by default: a seek bar needs the clip duration up front, so each control fetches metadata on page load. Individual tags can override this with seek=\"yes\" or seek=\"no\".",

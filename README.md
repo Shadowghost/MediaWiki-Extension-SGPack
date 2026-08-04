@@ -8,6 +8,7 @@ This MediaWiki extension bundles additional functionality for [https://stargate-
 * Implementation of dropdown menu
 * Automatical loading of a template selector when creating new pages (namespace specific)
 * Inline HTML5 audio play button for audio files, sized to fit a line of text
+* User statistics (edit counts, page creations, first and last edit) usable in running text
 
 ## Requirements
 
@@ -26,6 +27,7 @@ wfLoadExtension( 'SGPack' );
 | `$wgSGPackImageTop` | `/extensions/SGPack/resources/arrow-up-icon.png` | Icon for the jump-to-top link on headings |
 | `$wgSGPackImageEdit` | `/extensions/SGPack/resources/pencil-edit-icon.png` | Icon that replaces the `[edit]` text on headings |
 | `$wgSGPackAudioSeekBar` | `false` | Show a seek bar on inline audio controls |
+| `$wgSGPackUserStatisticsCacheExpiry` | `3600` | Seconds a page showing user statistics may stay in the parser cache; `0` never caches it |
 
 ### Inline audio
 
@@ -56,6 +58,46 @@ MP3 plays in every browser; Ogg Vorbis/Opus support in Safari is unreliable. Ins
 [TimedMediaHandler](https://www.mediawiki.org/wiki/Extension:TimedMediaHandler) is recommended if the wiki relies
 on Ogg, both because it provides transcodes and because it lets MediaWiki classify Ogg files as audio rather than
 generic multimedia.
+
+### User statistics
+
+Five tags put contribution counts into running text. They are a port of Thomas Klein's
+[`UserStatistics`](https://www.perrypedia.de/wiki/Benutzer:Bully1966/UserStatistics) extension, which
+stargate-wiki.de used until the 1.43 migration dropped it. The syntax is unchanged, so existing pages keep
+working.
+
+| Tag | Renders |
+|---|---|
+| `<useredit>Name</useredit>` | Number of edits. Several names may be separated by `\|`, and their counts are added up |
+| `<usercreate>Name</usercreate>` | Number of articles created in the main namespace |
+| `<usercreate all>Name</usercreate>` | Number of pages created in any namespace |
+| `<useredittopten>20</useredittopten>` | Ordered list of the 20 users with the most edits. No argument means 10, `all` means as many as the cap allows |
+| `<usereditfirst>Name</usereditfirst>` | Date and time of the user's first edit |
+| `<usereditlast>Name</usereditlast>` | Date and time of the user's most recent edit |
+
+```
+Benutzer <useredit>Bully1966</useredit> hat <usercreate>Bully1966</usercreate> Artikel erstellt.
+```
+
+An IP address works anywhere a user name does. A name that is neither an account on this wiki nor an IP
+address renders an error message, as it did before. A known user with no edits at all renders nothing for
+`<usereditfirst>`/`<usereditlast>`.
+
+Five behavioural differences from the original are worth knowing:
+
+* **Edit counts come from `user_editcount`**, the same number MediaWiki shows in preferences and
+  Special:ListUsers, instead of counting rows in `revision` on every page view. Edits to pages that have since
+  been deleted are therefore included, which they were not before.
+* **Page creations are revisions with no parent revision**, which is how MediaWiki itself identifies them (the
+  page-creation filter on Special:Contributions). Redirects and deleted pages are excluded, as before.
+* **`<useredittopten>` is capped at 500 entries**, including in `all` mode. The original emitted one list item
+  per account on the wiki, which does not end well on a large one.
+* **Accounts hidden by a suppressing block never appear in `<useredittopten>`.** The list is rendered once and
+  served to every reader, so it cannot depend on who is allowed to see the name.
+* **Pages using these tags stay in the parser cache**, for `$wgSGPackUserStatisticsCacheExpiry` seconds. The
+  original disabled the parser cache for any page carrying a counter; set the value to `0` to get that back.
+  Counts are therefore up to an hour stale by default, which is the trade for not re-running the queries on
+  every view.
 
 ## Upgrading
 
