@@ -3,12 +3,12 @@
 	<rule ref="./vendor/mediawiki/mediawiki-codesniffer/MediaWiki">
 		<exclude name="PSR12.Properties.ConstantVisibility.NotFound" />
 	</rule>
-	<rule ref="MediaWiki.NamingConventions.LowerCamelFunctionsName.FunctionName">
-		<exclude-pattern>ExtVariables.php</exclude-pattern>
-	</rule>
 	<rule ref="MediaWiki.NamingConventions.ValidGlobalName">
 		<properties>
-			<property name="allowedPrefixes" type="array" value="eg,wg" />
+			<property name="allowedPrefixes" type="array">
+				<element value="eg" />
+				<element value="wg" />
+			</property>
 		</properties>
 	</rule>
 	<file>.</file>
