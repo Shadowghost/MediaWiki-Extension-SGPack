@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # MediaWiki 1.43 supports PHP 8.1 to 8.3; composer.json requires >= 8.1.
+        php: [ '8.1', '8.2', '8.3' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      # parallel-lint + minus-x + phpcs + the standalone structure tests.
+      - name: composer test
+        run: composer test
+
+  js:
+    name: JavaScript and i18n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # eslint + banana
+      - name: npm test
+        run: npm test
+
+  mediawiki:
+    name: phan and parser tests (MediaWiki 1.43)
+    runs-on: ubuntu-latest
+    # NOT VERIFIED. Unlike the two jobs above, this one was never executed while
+    # it was written — it needs a full MediaWiki checkout, which was not
+    # available. It is allowed to fail so it cannot block merges; run it once via
+    # workflow_dispatch, fix whatever it reports, then delete this line to make it
+    # a required check.
+    continue-on-error: true
+    steps:
+      - name: Checkout MediaWiki core
+        uses: actions/checkout@v4
+        with:
+          repository: wikimedia/mediawiki
+          ref: REL1_43
+          path: mediawiki
+
+      - name: Checkout SGPack
+        uses: actions/checkout@v4
+        with:
+          path: mediawiki/extensions/SGPack
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+          # phan needs php-ast, which is not present in most environments; this
+          # is the reason the plan wanted phan run in CI rather than locally.
+          extensions: ast, mbstring, intl, calendar
+
+      - name: Install MediaWiki dependencies
+        working-directory: mediawiki
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install SGPack dependencies
+        working-directory: mediawiki/extensions/SGPack
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install a SQLite wiki with SGPack enabled
+        working-directory: mediawiki
+        run: |
+          mkdir -p cache/sqlite
+          php maintenance/install.php \
+            --dbtype=sqlite \
+            --dbpath="$PWD/cache/sqlite" \
+            --scriptpath="" \
+            --pass=ExamplePassword123 \
+            TestWiki AdminUser
+          echo "wfLoadExtension( 'SGPack' );" >> LocalSettings.php
+          php maintenance/update.php --quick
+
+      - name: phan
+        working-directory: mediawiki/extensions/SGPack
+        env:
+          MW_INSTALL_PATH: ${{ github.workspace }}/mediawiki
+        run: composer phan
+
+      # Parser tests live in tests/parser/ and are auto-discovered by
+      # ParserTestRunner::getParserTestFiles() for every registered extension.
+      - name: Parser tests
+        working-directory: mediawiki
+        run: php tests/parser/parserTests.php --file=extensions/SGPack/tests/parser/SGPack.txt

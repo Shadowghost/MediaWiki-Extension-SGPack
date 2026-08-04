@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Standalone PHPUnit configuration for the tests that need no MediaWiki install.
+	MediaWiki's own suite auto-discovers tests/phpunit/ and ignores this file.
+-->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="vendor/autoload.php"
+	colors="true"
+	beStrictAboutTestsThatDoNotTestAnything="false"
+	convertDeprecationsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="structure">
+			<directory>tests/phpunit/structure</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

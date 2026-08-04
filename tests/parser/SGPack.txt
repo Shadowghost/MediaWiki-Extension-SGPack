@@ -1,0 +1,203 @@
+!! Version 2
+
+# Parser tests for the parser functions and tags SGPack registers.
+#
+# MediaWiki auto-discovers this file: ParserTestRunner::getParserTestFiles()
+# scans <extension>/tests/parser/ for every registered extension. There is no
+# extension.json key for it — "ParserTestFiles" is not part of the
+# extension.schema.v2 schema and adding it would fail schema validation.
+#
+# Each case pads the result with x…y so the expected paragraph is unambiguous;
+# a parser function returning an empty string on a line of its own produces no
+# paragraph at all.
+#
+# html/php rather than html: these are legacy tag and function hooks, so only
+# the legacy parser is expected to render them.
+
+!! test
+#in: all elements present in set
+!! wikitext
+x{{#in:a,b|a,b,c}}y
+!! html/php
+<p>xa,by
+</p>
+!! end
+
+!! test
+#in: an element missing from the set yields nothing
+!! wikitext
+x{{#in:a,z|a,b,c}}y
+!! html/php
+<p>xy
+</p>
+!! end
+
+!! test
+#in: single-element mode returns the elements that matched
+!! wikitext
+x{{#in:a,z|a,b,c|,|e}}y
+!! html/php
+<p>xay
+</p>
+!! end
+
+!! test
+#in: success result
+!! wikitext
+x{{#in:a|a,b|,|a|yes,no}}y
+!! html/php
+<p>xyesy
+</p>
+!! end
+
+!! test
+#in: failure result
+!! wikitext
+x{{#in:z|a,b|,|a|yes,no}}y
+!! html/php
+<p>xnoy
+</p>
+!! end
+
+!! test
+#in: alternate separator
+!! wikitext
+x{{#in:a;b|a;b;c|;}}y
+!! html/php
+<p>xa;by
+</p>
+!! end
+
+!! test
+trim
+!! wikitext
+x{{trim: spaced }}y
+!! html/php
+<p>xspacedy
+</p>
+!! end
+
+!! test
+carray: write then read a key
+!! wikitext
+x{{carray:1|w|a=1|b=2}}{{carray:1|r|b}}y
+!! html/php
+<p>x2y
+</p>
+!! end
+
+!! test
+carray: #default is used for a missing key
+!! wikitext
+x{{carray:2|w|a=1|#default=none}}{{carray:2|r|zz}}y
+!! html/php
+<p>xnoney
+</p>
+!! end
+
+!! test
+carray: readwrite writes and reads in one call
+!! wikitext
+x{{carray:3|rw|b|a=1|b=2}}y
+!! html/php
+<p>x2y
+</p>
+!! end
+
+!! test
+carray: count
+!! wikitext
+x{{carray:4|w|a=1|b=2}}{{carray:4|c}}y
+!! html/php
+<p>x2y
+</p>
+!! end
+
+!! test
+carray: count of an unset carray is 0, not a fatal
+!! wikitext
+x{{carray:5|c}}y
+!! html/php
+<p>x0y
+</p>
+!! end
+
+!! test
+carray: delete
+!! wikitext
+x{{carray:6|w|a=1}}{{carray:6|d}}{{carray:6|u}}y
+!! html/php
+<p>xy
+</p>
+!! end
+
+!! test
+keys: joins parts with an underscore
+!! wikitext
+x{{keys:a|b}}y
+!! html/php
+<p>xa_by
+</p>
+!! end
+
+!! test
+keys: uppercase modifier
+!! wikitext
+x{{keys:u:ab}}y
+!! html/php
+<p>xABy
+</p>
+!! end
+
+!! test
+keys: lowercase modifier
+!! wikitext
+x{{keys:l:AB}}y
+!! html/php
+<p>xaby
+</p>
+!! end
+
+!! test
+sort2: inline ascending sort
+!! wikitext
+x<sort2 type="inline" separator=",">c
+a
+b</sort2>y
+!! html/php
+<p>xa,b,cy
+</p>
+!! end
+
+!! test
+sort2: inline descending sort
+!! wikitext
+x<sort2 type="inline" separator="," order="desc">c
+a
+b</sort2>y
+!! html/php
+<p>xc,b,ay
+</p>
+!! end
+
+!! test
+sort2: order=none keeps the input order
+!! wikitext
+x<sort2 type="inline" separator="," order="none">c
+a
+b</sort2>y
+!! html/php
+<p>xc,a,by
+</p>
+!! end
+
+!! test
+sort2: duplicate lines are kept
+!! wikitext
+x<sort2 type="inline" separator=",">a
+a
+b</sort2>y
+!! html/php
+<p>xa,a,by
+</p>
+!! end
