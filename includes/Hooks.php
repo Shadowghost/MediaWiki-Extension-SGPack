@@ -10,6 +10,7 @@ namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Hook\ParserFirstCallInitHook;
 use MediaWiki\Hook\ParserOptionsRegisterHook;
+use MediaWiki\MediaWikiServices;
 use MediaWiki\Parser\Parser;
 use MediaWiki\Parser\ParserOptions;
 
@@ -35,6 +36,11 @@ class Hooks implements
 		$parser->setHook( 'ddbutton', [ DDInsert::class, 'ddIButton' ] );
 		$parser->setHook( 'sort2', [ Sort2::class, 'sgPackRenderSort' ] );
 		$parser->setHook( 'audioplay', [ InlineAudio::class, 'renderTag' ] );
+		$parser->setHook( 'useredit', [ UserStatistics::class, 'renderUserEdit' ] );
+		$parser->setHook( 'usercreate', [ UserStatistics::class, 'renderUserCreate' ] );
+		$parser->setHook( 'useredittopten', [ UserStatistics::class, 'renderTopEditors' ] );
+		$parser->setHook( 'usereditfirst', [ UserStatistics::class, 'renderFirstEdit' ] );
+		$parser->setHook( 'usereditlast', [ UserStatistics::class, 'renderLastEdit' ] );
 		$parser->setFunctionHook( 'carray', [ CacheArray::class, 'sgPackCacheArray' ], Parser::SFH_NO_HASH );
 		$parser->setFunctionHook( 'keys', [ CacheArray::class, 'sgPackKeys' ], Parser::SFH_NO_HASH );
 		$parser->setFunctionHook( 'trim', [ ParserAdds::class, 'sgPackTrim' ], Parser::SFH_NO_HASH );
@@ -69,7 +75,26 @@ class Hooks implements
 		$inCacheKey[ParserAdds::USER_PARSER_OPTION] = true;
 		$lazyLoad[ParserAdds::USER_PARSER_OPTION] = static function ( ParserOptions $options ) {
 			$user = $options->getUserIdentity();
-			return $user->isRegistered() ? $user->getName() : self::ANON_CACHE_KEY;
+			if ( !$user->isRegistered() ) {
+				return self::ANON_CACHE_KEY;
+			}
+
+			// Group membership belongs in the key, not just the name.
+			// {{userinfo:group}} and {{userinfo:groups}} change what they render when
+			// a user is promoted or demoted, and a name-only key left the stale entry
+			// in place until something else re-parsed the page — so a new member of a
+			// group kept seeing the old output. Sorted, so an ordering change in the
+			// group list does not invalidate every entry for nothing.
+			//
+			// getUserGroups(), matching ParserAdds: effective groups would add
+			// implicit ones such as `autoconfirmed`, churning keys on transitions the
+			// parser functions never report.
+			$groups = MediaWikiServices::getInstance()
+				->getUserGroupManager()
+				->getUserGroups( $user );
+			sort( $groups );
+
+			return $user->getName() . '|' . implode( ',', $groups );
 		};
 	}
 }
