@@ -140,7 +140,7 @@ class DDInsert
 		$show = $args['show'] ?? $input;
 		// Get sampleText if given
 		$sample = $args['sample'] ?? '';
-		// Add + to input if not set - need for javascript-split
+		// Add + to input if not set - required for javascript-split
 		if (strpos($input, "+") === false) {
 			$input .= "+";
 		}

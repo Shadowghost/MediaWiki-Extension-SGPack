@@ -207,7 +207,7 @@ class ParserAdds
 						return '<strong class="error">' . wfMessage('parseradds_userinfo_illegal') . '</strong>';
 					}
 				}
-				$back = $user->mEmail;
+				$back = $user->getEmail();
 				break;
 			case 'skin':
 				$back = $user->getSkin()->skinname;
@@ -228,7 +228,7 @@ class ParserAdds
 						return '<strong class="error">' . wfMessage('parseradds_userinfo_illegal') . '</strong>';
 					}
 				}
-				$back = '[[' . $user->getUserPage()->getTalkNsText() . $user->mName . ']]';
+				$back = '[[' . $user->getUserPage()->getTalkNsText() . $user->getName() . ']]';
 				break;
 			case 'groups':
 				$userService = MediaWikiServices::getInstance()->getUserGroupManager();
@@ -239,7 +239,9 @@ class ParserAdds
 				$back = in_array($param, $userService->getUserGroups($user)) ? $param : '';
 				break;
 			case 'browser':
-				$back = $_SERVER['HTTP_USER_AGENT'];
+				// Absent on requests without a User-Agent header and in CLI contexts (jobs, maintenance)
+				$userAgent = RequestContext::getMain()->getRequest()->getHeader('User-Agent');
+				$back = $userAgent !== false ? $userAgent : '';
 				if (!empty($param)) {
 					if (false === strpos($back, $param)) {
 						$back = '';

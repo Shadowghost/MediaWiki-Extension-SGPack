@@ -248,8 +248,8 @@ class Sort2
 	 */
 	private function parse($text)
 	{
-		$title = &$this->parser->mTitle;
-		$options = &$this->parser->mOptions;
+		$title = &$this->parser->getTitle();
+		$options = &$this->parser->getOptions();
 		$output = $this->parser->parse($text, $title, $options, true, false);
 		return $output->getText();
 	}

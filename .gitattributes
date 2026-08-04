@@ -1,0 +1,6 @@
+# Normalise line endings on checkin and check out LF everywhere.
+# eslint-config-wikimedia enforces LF, so a CRLF working tree (core.autocrlf=true
+# on Windows) otherwise produces thousands of phantom linebreak-style errors.
+* text=auto eol=lf
+
+*.png binary

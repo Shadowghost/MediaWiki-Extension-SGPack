@@ -66,19 +66,8 @@
 			"scripts": [
 				"index.js"
 			],
-			"targets": [
-				"desktop"
-			]
-		},
-		"ext.sgPack.styles": {
-			"dependencies": [
-				"jquery.textSelection"
-			],
 			"styles": [
-				"styles.css"
-			],
-			"targets": [
-				"desktop"
+				"index.css"
 			]
 		}
 	},

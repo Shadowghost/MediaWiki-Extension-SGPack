@@ -24,7 +24,7 @@ class AddWhosOnline
 	{
 		$title = $sktemplate->getTitle();
 		// Title of the WhosOnline specialpage
-		$sp = Title::makeTitle(NS_SPECIAL, 'WhosOnline');
+		$sp = Title::makeTitleSafe(NS_SPECIAL, 'WhosOnline');
 		// Be sure we are not on the specialpage
 		if ($title->getNamespace() != NS_SPECIAL || SpecialPage::getTitleFor('WhosOnline', false)->getText() != $title->getText()) {
 			$usermenu = $links['user-menu'];
@@ -49,7 +49,7 @@ class AddWhosOnline
 	{
 		$dbProvider = MediaWikiServices::getInstance()->getDBLoadBalancerFactory();
 		$dbw = $dbProvider->getPrimaryDatabase();
-		$dbw->delete('online', ['userid = ' . $user->mId], __METHOD__);
+		$dbw->delete('online', ['userid = ' . $user->getId()], __METHOD__);
 
 		return true;
 	}
