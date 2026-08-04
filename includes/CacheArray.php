@@ -9,9 +9,9 @@
 namespace MediaWiki\Extension\SGPack;
 
 use ContentHandler;
+use MediaWiki\MediaWikiServices;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
-use WikiPage;
 
 class CacheArray {
 
@@ -102,9 +102,16 @@ class CacheArray {
 
 				// If carray is already set do not read it again (cache!)
 				if ( !isset( self::$cache[$cnumber] ) ) {
-					$wp = new WikiPage( Title::newFromText( $file ) );
-					$revisionRecord = $wp->getRevisionRecord();
-					$text = $revisionRecord->getContent( SlotRecord::MAIN );
+					// An invalid page name or a page with no current revision must not
+					// fatal; treat both as an empty data source.
+					$dataTitle = Title::newFromText( $file );
+					$revisionRecord = $dataTitle
+						? MediaWikiServices::getInstance()
+							->getWikiPageFactory()
+							->newFromTitle( $dataTitle )
+							->getRevisionRecord()
+						: null;
+					$text = $revisionRecord ? $revisionRecord->getContent( SlotRecord::MAIN ) : null;
 					if ( $text ) {
 						$content = ContentHandler::getContentText( $text );
 						$cont = explode( '|', $content );
@@ -177,7 +184,8 @@ class CacheArray {
 				break;
 			case 'c': // Count elements in carray
 			case 'count':
-				$output = count( self::$cache[$cnumber] );
+				// count( null ) is a TypeError on PHP 8, so an unset carray counts as 0
+				$output = isset( self::$cache[$cnumber] ) ? count( self::$cache[$cnumber] ) : 0;
 				break;
 			case 'u': // Test if cache is used
 			case 'used':

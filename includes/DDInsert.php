@@ -8,13 +8,22 @@
 
 namespace MediaWiki\Extension\SGPack;
 
+use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Parser\Sanitizer;
 
 class DDInsert {
 	/**
-	 * @var array
+	 * Stack of open <ddselect> blocks, innermost last.
+	 *
+	 * This is a stack rather than a single block so that a nested <ddselect>
+	 * does not overwrite the state of the one enclosing it, and so that a
+	 * <ddvalue> outside any <ddselect> can be detected instead of reading
+	 * undefined 'pwidth'/'pheight' keys.
+	 *
+	 * @var array[]
 	 */
-	private static $ddIBlock = [];
+	private static $ddIStack = [];
 
 	/**
 	 * @param string $text
@@ -33,6 +42,18 @@ class DDInsert {
 	/**
 	 * JSButton - just for normal use in page
 	 *
+	 * The `click`, `mover` and `mout` attributes are intentionally not supported.
+	 * They wrote editor-supplied text straight into onclick/onmouseover/onmouseout,
+	 * which made this tag an arbitrary-JavaScript primitive for anyone who could
+	 * edit a page. They cannot be made safe while editors control their contents,
+	 * so they are dropped rather than escaped.
+	 *
+	 * Every remaining attribute goes through Html::rawElement(), which escapes it.
+	 * That matters even for plain attributes such as `id` or `value`, because
+	 * Sanitizer::decodeTagAttributes() resolves character references before a tag
+	 * hook sees them — so a `&quot;` used to break out of the attribute and inject
+	 * a handler of its own.
+	 *
 	 * @param string $input
 	 * @param array $args
 	 * @param Parser $parser
@@ -40,17 +61,24 @@ class DDInsert {
 	 *
 	 * @return string
 	 */
-	public static function JSButton( $input, $args, $parser, $frame ) {
-		$param = 'type="button"';
-		$param .= isset( $args['name'] ) ? ' name = "' . $args['name'] . '"' : ' name = "jsbutton"';
-		$param .= isset( $args['id'] ) ? ' id = "' . $args['id'] . '"' : '';
-		$param .= isset( $args['value'] ) ? ' value = "' . $args['value'] . '"' : '';
-		$param .= isset( $args['class'] ) ? ' class = "' . $args['class'] . '"' : ' class = "jsbutton"';
-		$param .= isset( $args['style'] ) ? ' style = "' . $args['style'] . '"' : '';
-		$param .= isset( $args['click'] ) ? ' onclick = "' . $args['click'] . '"' : '';
-		$param .= isset( $args['mover'] ) ? ' onmouseover = "' . $args['mover'] . '"' : '';
-		$param .= isset( $args['mout'] ) ? ' onmouseout = "' . $args['mout'] . '"' : '';
-		return '<button ' . $param . '>' . $parser->recursiveTagParse( $input, $frame ) . '</button>';
+	public static function jsButton( $input, $args, $parser, $frame ) {
+		$attribs = [
+			'type' => 'button',
+			'name' => $args['name'] ?? 'jsbutton',
+			'class' => $args['class'] ?? 'jsbutton',
+		];
+		if ( isset( $args['id'] ) ) {
+			$attribs['id'] = $args['id'];
+		}
+		if ( isset( $args['value'] ) ) {
+			$attribs['value'] = $args['value'];
+		}
+		if ( isset( $args['style'] ) ) {
+			$attribs['style'] = Sanitizer::checkCss( $args['style'] );
+		}
+
+		// rawElement, not element: the label is parsed wikitext and so is already HTML
+		return Html::rawElement( 'button', $attribs, $parser->recursiveTagParse( $input, $frame ) );
 	}
 
 	/**
@@ -105,18 +133,33 @@ class DDInsert {
 	 * @return string
 	 */
 	public static function ddISelect( $input, $args, $parser, $frame ) {
-		self::$ddIBlock = [ 'size' => 1, 'name' => 'DDSelect-' . mt_rand(), 'title' => wfMessage( 'ddinsert-selecttitle' ), 'pwidth' => 0, 'pheight' => 1, 'values' => [] ];
+		$block = [
+			'size' => 1,
+			'name' => 'DDSelect-' . mt_rand(),
+			'title' => wfMessage( 'ddinsert-selecttitle' )->text(),
+			'pwidth' => 0,
+			'pheight' => 1,
+			'values' => [],
+		];
 		if ( isset( $args['title'] ) ) {
-			self::$ddIBlock['title'] = $args['title'];
+			$block['title'] = $args['title'];
 		}
 		if ( isset( $args['size'] ) ) {
-			self::$ddIBlock['size'] = $args['size'];
+			$block['size'] = $args['size'];
 		}
 		if ( isset( $args['name'] ) ) {
-			self::$ddIBlock['name'] = $args['name'];
+			$block['name'] = $args['name'];
 		}
-		$parser->recursiveTagParse( $input, $frame );
-		return self::ddIOutput();
+
+		// The nested <ddvalue> tags fill this block in while $input is parsed.
+		self::$ddIStack[] = $block;
+		try {
+			$parser->recursiveTagParse( $input, $frame );
+		} finally {
+			$block = array_pop( self::$ddIStack );
+		}
+
+		return self::ddIOutput( $block );
 	}
 
 	/**
@@ -130,6 +173,11 @@ class DDInsert {
 	 * @return string
 	 */
 	public static function ddIValue( $input, $args, $parser, $frame ) {
+		// A <ddvalue> outside any <ddselect> has no block to add itself to
+		if ( !self::$ddIStack ) {
+			return '';
+		}
+		$top = count( self::$ddIStack ) - 1;
 		// If no show parameter is given use input also as showText
 		$show = $args['show'] ?? $input;
 		// Get sampleText if given
@@ -146,35 +194,37 @@ class DDInsert {
 				$iURL = $image->getURL();
 				$iwidth = $image->getWidth();
 				$iheight = $image->getHeight();
-				if ( $iwidth > ( self::$ddIBlock['pwidth'] - 5 ) ) {
-					self::$ddIBlock['pwidth'] = $iwidth + 5;
+				if ( $iwidth > ( self::$ddIStack[$top]['pwidth'] - 5 ) ) {
+					self::$ddIStack[$top]['pwidth'] = $iwidth + 5;
 				}
-				if ( $iheight > ( self::$ddIBlock['pheight'] ) ) {
-					self::$ddIBlock['pheight'] = $iheight;
+				if ( $iheight > ( self::$ddIStack[$top]['pheight'] ) ) {
+					self::$ddIStack[$top]['pheight'] = $iheight;
 				}
 			}
 		}
-		// Save parameter to global array
-		self::$ddIBlock['values'][] = [ 'value' => $input . '+' . $sample, 'text' => $show, 'image' => $iURL ];
+		// Save parameter to the enclosing <ddselect> block
+		self::$ddIStack[$top]['values'][] = [ 'value' => $input . '+' . $sample, 'text' => $show, 'image' => $iURL ];
 		return '';
 	}
 
 	/**
 	 * Create Output
 	 *
+	 * @param array $block A completed <ddselect> block
+	 *
 	 * @return string
 	 */
-	public static function ddIOutput() {
+	private static function ddIOutput( array $block ) {
 		$output = '';
-		$output .= '<select size="' . self::$ddIBlock['size'] . '" name="' . self::$ddIBlock['name'] . '"';
+		$output .= '<select size="' . $block['size'] . '" name="' . $block['name'] . '"';
 		$output .= ' onchange="';
 		$output .= 'mw.SGPack.insertSelect(this); this.options.selectedIndex = 0; ';
 		$output .= 'return false;">';
 		$output .= '<option value="++" selected="selected">';
-		$output .= self::$ddIBlock['title'];
+		$output .= $block['title'];
 		$output .= '</option>';
-		foreach ( self::$ddIBlock['values'] as $values ) {
-			$output .= self::ddILine( $values['text'], $values['value'], $values['image'] );
+		foreach ( $block['values'] as $values ) {
+			$output .= self::ddILine( $block, $values['text'], $values['value'], $values['image'] );
 		}
 		$output .= "</select>";
 		return $output;
@@ -183,18 +233,19 @@ class DDInsert {
 	/**
 	 * Create option line
 	 *
+	 * @param array $block The enclosing <ddselect> block
 	 * @param string $text
-	 * @param array $value
+	 * @param string $value
 	 * @param string $image
 	 *
 	 * @return string
 	 */
-	public static function ddILine( $text, $value, $image ) {
-		if ( self::$ddIBlock['pwidth'] > 0 ) {
+	private static function ddILine( array $block, $text, $value, $image ) {
+		if ( $block['pwidth'] > 0 ) {
 			if ( !empty( $image ) ) {
-				$css = 'style="height: ' . self::$ddIBlock['pheight'] . 'px; padding-left: ' . self::$ddIBlock['pwidth'] . 'px; padding-right: 5px; background-repeat: no-repeat; background-image: url(' . $image . ');"';
+				$css = 'style="height: ' . $block['pheight'] . 'px; padding-left: ' . $block['pwidth'] . 'px; padding-right: 5px; background-repeat: no-repeat; background-image: url(' . $image . ');"';
 			} else {
-				$css = 'style="padding-left: ' . self::$ddIBlock['pwidth'] . 'px; padding-right: 5px;"';
+				$css = 'style="padding-left: ' . $block['pwidth'] . 'px; padding-right: 5px;"';
 			}
 		} else {
 			$css = '';

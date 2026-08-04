@@ -18,7 +18,7 @@ class Hooks implements
 	 * @param Parser $parser
 	 */
 	public function onParserFirstCallInit( $parser ): void {
-		$parser->setHook( 'jsbutton', [ DDInsert::class, 'JSButton' ] );
+		$parser->setHook( 'jsbutton', [ DDInsert::class, 'jsButton' ] );
 		$parser->setHook( 'ddselect', [ DDInsert::class, 'ddISelect' ] );
 		$parser->setHook( 'ddvalue', [ DDInsert::class, 'ddIValue' ] );
 		$parser->setHook( 'ddbutton', [ DDInsert::class, 'ddIButton' ] );

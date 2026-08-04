@@ -8,12 +8,44 @@
 
 namespace MediaWiki\Extension\SGPack;
 
+use MediaWiki\Content\TextContent;
+use MediaWiki\Hook\EditPage__showEditForm_initialHook;
 use MediaWiki\MediaWikiServices;
 use ParserOptions;
 use Title;
 use Xml;
 
-class NewArticle {
+class NewArticle implements
+	EditPage__showEditForm_initialHook
+{
+
+	/**
+	 * Load a template page and return its filtered wikitext.
+	 *
+	 * Returns null for a name that is not a valid title, a page that does not
+	 * exist, and a page whose content model is not text-based — all three of
+	 * which previously reached filterPage() or getNativeData() unguarded.
+	 *
+	 * @param string $name Template name, without the namespace prefix
+	 *
+	 * @return string|null
+	 */
+	private static function loadTemplateText( $name ) {
+		$title = Title::makeTitleSafe( NS_TEMPLATE, trim( $name ) );
+		if ( !$title ) {
+			return null;
+		}
+
+		$content = MediaWikiServices::getInstance()
+			->getWikiPageFactory()
+			->newFromTitle( $title )
+			->getContent();
+		if ( !$content instanceof TextContent ) {
+			return null;
+		}
+
+		return self::filterPage( $content->getText() );
+	}
 
 	/**
 	 * Filter article, noinclude remove
@@ -39,28 +71,32 @@ class NewArticle {
 	 *
 	 * @return true
 	 */
-	public static function onEditPage__showEditForm_initial( $editPage, $output ) {
+	public function onEditPage__showEditForm_initial( $editPage, $output ) {
 		$parser = MediaWikiServices::getInstance()->getParser();
 		$pageFactory = MediaWikiServices::getInstance()->getWikiPageFactory();
 		$title = $output->getTitle();
 
 		// Check if new article
-		if ( !$title->exists() ) {
+		if ( $title && !$title->exists() ) {
 			// Load control page "MediaWiki:NewArticle-NS"
-			$page = $pageFactory->newFromTitle( Title::makeTitleSafe( 8, 'NewArticle-' . $title->getNamespace() ) );
+			$controlTitle = Title::makeTitleSafe( NS_MEDIAWIKI, 'NewArticle-' . $title->getNamespace() );
+			if ( !$controlTitle ) {
+				return true;
+			}
+			$page = $pageFactory->newFromTitle( $controlTitle );
 			$content = $page->getContent();
 			// Check if something is loaded
-			if ( !empty( $content ) ) {
+			if ( $content instanceof TextContent ) {
 				// Init buffer
 				$html = '';
 				$idNr = 0;
 				// Seite parsen
-				$text = $parser->parse( $content->getNativeData(), $page->getTitle(), new ParserOptions( $output->getUser() ) );
+				$text = $parser->parse( $content->getText(), $page->getTitle(), new ParserOptions( $output->getUser() ) );
 				// Definition der Auswahlliste(n) herrauslösen
 				$teile = preg_split( '/(\[\[\[.*?\]\]\])/s', $text->getText(), -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
 				foreach ( $teile as $teil ) {
 					// Wenn Auswahlliste [[[...]]]
-					if ( substr( $teil, 0, 3 ) == '[[[' and substr( $teil, -3, 3 ) == ']]]' ) {
+					if ( substr( $teil, 0, 3 ) == '[[[' && substr( $teil, -3, 3 ) == ']]]' ) {
 						// Klammern entfernen
 						$teil = substr( $teil, 3, strlen( $teil ) - 4 );
 						$tarray = explode( ',', $teil );
@@ -70,21 +106,18 @@ class NewArticle {
 							$zeile = explode( '|', $tarray[0] );
 							$zeile[] = '';
 							// Artikel einlesen, umwandeln und im HTML Code ablegen
-							$tmpPage = $pageFactory->newFromTitle( Title::makeTitleSafe( 10, trim( $zeile[0] ) ) );
-							$tmpContent = $tmpPage->getContent();
-							if ( !empty( $tmpContent ) ) {
+							$tmpText = self::loadTemplateText( $zeile[0] );
+							if ( $tmpText !== null && $tmpText !== '' ) {
 								$html .= Xml::element(
 									'button',
 									[
-										'onclick' => "mw.SGPack.insert('" . DDInsert::sgpEncode( '+' . self::filterPage( $tmpContent ) . '+' ) . "');",
+										'onclick' => "mw.SGPack.insert('" . DDInsert::sgpEncode( '+' . $tmpText . '+' ) . "');",
 										'id' => 'NewArticleButton' . $idNr,
 										'type' => 'button'
 									],
 									$zeile[1]
 								);
 							}
-							unset( $tmpPage );
-							unset( $tmpContent );
 						}
 						if ( count( $tarray ) > 1 ) {
 							$idNr += 1;
@@ -106,23 +139,21 @@ class NewArticle {
 								$zeile = explode( '|', $value );
 								$zeile[] = '';
 								// Artikel einlesen, umwandeln und im HTML Code ablegen
-								$tmpPage = $pageFactory->newFromTitle( Title::makeTitleSafe( 10, trim( $zeile[0] ) ) );
-								$tmpContent = $tmpPage->getContent()->getNativeData();
-								if ( !empty( $tmpContent ) ) {
+								$tmpText = self::loadTemplateText( $zeile[0] );
+								if ( $tmpText !== null && $tmpText !== '' ) {
 									$html .= Xml::element(
 										'option',
 										[
-											'value' => DDInsert::sgpEncode( '+' . self::filterPage( $tmpContent ) . '+' )
+											'value' => DDInsert::sgpEncode( '+' . $tmpText . '+' )
 										],
 										$zeile[1]
 									);
 								}
-								unset( $tmpPage );
-								unset( $tmpContent );
 							}
 							$html .= '</select>';
 						}
-					} else {    // Sonstigen Text nur übernehmen
+					} else {
+						// Sonstigen Text nur übernehmen
 						$html .= $teil;
 					}
 				}

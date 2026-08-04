@@ -8,45 +8,69 @@
 
 namespace MediaWiki\Extension\SGPack;
 
+use ExtensionRegistry;
+use MediaWiki\Hook\SkinTemplateNavigation__UniversalHook;
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Title\Title;
+use MediaWiki\User\Hook\UserLogoutHook;
 use SpecialPage;
 
-class AddWhosOnline {
+class AddWhosOnline implements
+	SkinTemplateNavigation__UniversalHook,
+	UserLogoutHook
+{
 	/**
 	 * @param SkinTemplate $sktemplate
 	 * @param array &$links
-	 *
-	 * @return true
 	 */
-	public function onSkinTemplateNavigation__Universal( $sktemplate, array &$links ) {
-		$title = $sktemplate->getTitle();
-		// Title of the WhosOnline specialpage
-		$sp = Title::makeTitleSafe( NS_SPECIAL, 'WhosOnline' );
-		// Be sure we are not on the specialpage
-		if ( $title->getNamespace() != NS_SPECIAL || SpecialPage::getTitleFor( 'WhosOnline', false )->getText() != $title->getText() ) {
-			$usermenu = $links['user-menu'];
-			$a['online'] = [
-				'class' => '',
-				'href' => $sp->getLocalURL(),
-				'text' => wfMessage( 'addwhosonline-pmenu' )->text()
-			];
-			// Place new item on second last position
-			$links['user-menu'] = array_slice( $usermenu, 0, count( $usermenu ) - 1, true ) + $a + array_slice( $usermenu, -1, true );
+	public function onSkinTemplateNavigation__Universal( $sktemplate, &$links ): void {
+		// Both the link target and the `online` table belong to the separate
+		// WhosOnline extension, so do nothing at all when it is not installed
+		if ( !ExtensionRegistry::getInstance()->isLoaded( 'WhosOnline' ) ) {
+			return;
 		}
 
-		return true;
+		if ( !isset( $links['user-menu'] ) ) {
+			return;
+		}
+
+		$title = $sktemplate->getTitle();
+		// Title of the WhosOnline specialpage
+		$sp = SpecialPage::getTitleFor( 'WhosOnline' );
+		// Be sure we are not on the specialpage
+		if ( $title && $title->equals( $sp ) ) {
+			return;
+		}
+
+		$usermenu = $links['user-menu'];
+		$a['online'] = [
+			'class' => '',
+			'href' => $sp->getLocalURL(),
+			'text' => wfMessage( 'addwhosonline-pmenu' )->text()
+		];
+		// Place new item on second last position
+		$links['user-menu'] = array_slice( $usermenu, 0, count( $usermenu ) - 1, true )
+			+ $a
+			+ array_slice( $usermenu, -1, true );
 	}
 
 	/**
-	 * @param User &$user
+	 * @param User $user
 	 *
 	 * @return true
 	 */
-	public function onUserLogout( &$user ) {
+	public function onUserLogout( $user ) {
+		// The `online` table is provided by the WhosOnline extension
+		if ( !ExtensionRegistry::getInstance()->isLoaded( 'WhosOnline' ) ) {
+			return true;
+		}
+
 		$dbProvider = MediaWikiServices::getInstance()->getDBLoadBalancerFactory();
-		$dbw = $dbProvider->getPrimaryDatabase();
-		$dbw->delete( 'online', [ 'userid = ' . $user->getId() ], __METHOD__ );
+		$dbProvider->getPrimaryDatabase()
+			->newDeleteQueryBuilder()
+			->deleteFrom( 'online' )
+			->where( [ 'userid' => $user->getId() ] )
+			->caller( __METHOD__ )
+			->execute();
 
 		return true;
 	}

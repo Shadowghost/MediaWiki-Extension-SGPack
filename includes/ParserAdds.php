@@ -195,12 +195,10 @@ class ParserAdds {
 				$back = $user->getRealName();
 				break;
 			case 'email':
-				if ( !empty( $param ) ) {
-					$user = User::NewFromName( $param );
-					if ( $user === false ) {
-						return '<strong class="error">' . wfMessage( 'parseradds_userinfo_illegal' ) . '</strong>';
-					}
-				}
+				// Deliberately ignores $param. Honouring it loaded an arbitrary
+				// account and rendered its address into the page, so anyone able
+				// to edit could expose any registered user's email to every
+				// viewer. Only the requesting user's own address is available.
 				$back = $user->getEmail();
 				break;
 			case 'skin':

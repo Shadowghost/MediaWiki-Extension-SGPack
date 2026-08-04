@@ -8,6 +8,9 @@
 
 namespace MediaWiki\Extension\SGPack;
 
+use MediaWiki\Html\Html;
+use MediaWiki\Parser\Sanitizer;
+
 class Sort2 {
 	/**
 	 * @var Parser
@@ -40,7 +43,7 @@ class Sort2 {
 	var $style;
 
 	/**
-	 * @var string
+	 * @var int|null
 	 */
 	var $start;
 
@@ -64,7 +67,7 @@ class Sort2 {
 		$this->separator = "\n";
 		$this->casesense = "false";
 		$this->style = "";
-		$this->start = "";
+		$this->start = null;
 		$this->title = "";
 	}
 
@@ -98,17 +101,21 @@ class Sort2 {
 				$this->type = $c;
 			}
 		}
-		if ( isset( $settings['separator'] ) and $this->type == "inline" ) {
+		if ( isset( $settings['separator'] ) && $this->type == "inline" ) {
 			$this->separator = str_ireplace( "&sp;", " ", $settings['separator'] );
 		}
-		if ( isset( $settings['casesense'] ) and strtolower( $settings['casesense'] ) == "true" ) {
+		if ( isset( $settings['casesense'] ) && strtolower( $settings['casesense'] ) == "true" ) {
 			$this->casesense = "true";
 		}
-		if ( isset( $settings['style'] ) and $this->allowStyles == true ) {
-			$this->style = 'style="' . $settings['style'] . '"';
+		// Both of these used to be interpolated into the start tag raw. They are
+		// stored as plain values now and escaped by Html::openElement() in
+		// makeList(); CSS additionally goes through Sanitizer::checkCss().
+		if ( isset( $settings['style'] ) && $this->allowStyles ) {
+			$this->style = Sanitizer::checkCss( $settings['style'] );
 		}
 		if ( isset( $settings['start'] ) ) {
-			$this->start = 'start="' . $settings['start'] . '"';
+			// <ol start> is an integer
+			$this->start = (int)$settings['start'];
 		}
 		if ( isset( $settings['title'] ) ) {
 			$this->title = str_ireplace( "&sp;", " ", $settings['title'] );
@@ -184,17 +191,25 @@ class Sort2 {
 		$listtoken = "<li>";
 		$endlisttoken = "</li>";
 
+		$attribs = [];
+		if ( $this->style !== "" ) {
+			$attribs['style'] = $this->style;
+		}
+
 		switch ( $this->type ) {
 			case ( "ul" ):
-				$starttoken = "<ul $this->style>";
+				$starttoken = Html::openElement( 'ul', $attribs );
 				$endtoken = "</ul>";
 				break;
 			case ( "ol" ):
-				$starttoken = "<ol {$this->style} {$this->start}>";
+				if ( $this->start !== null ) {
+					$attribs['start'] = $this->start;
+				}
+				$starttoken = Html::openElement( 'ol', $attribs );
 				$endtoken = "</ol>";
 				break;
 			case ( "dl" ):
-				$starttoken = "<dl $this->style>";
+				$starttoken = Html::openElement( 'dl', $attribs );
 				$endtoken = "</dl>";
 				$listtoken = "<dd>";
 				$endlisttoken = "";
@@ -213,7 +228,7 @@ class Sort2 {
 				$endlisttoken = "";
 				break;
 			default:
-				$starttoken = "<ul $this->style>";
+				$starttoken = Html::openElement( 'ul', $attribs );
 				$endtoken = "</ul>";
 				break;
 		}

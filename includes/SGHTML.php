@@ -62,7 +62,6 @@ class SGHTML implements
 			$out->getTitle()->isSpecial( 'Upload' ) || in_array( $out->getActionName(), [ 'edit', 'submit' ] )
 		) {
 			$out->addModules( 'ext.sgPack' );
-			$out->addModuleStyles( 'ext.sgPack' );
 		}
 	}
 }
