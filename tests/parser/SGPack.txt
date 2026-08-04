@@ -237,3 +237,136 @@ jsbutton: no event-handler attributes are emitted
 <p><button type="button" name="jsbutton" class="jsbutton">Go</button>
 </p>
 !! end
+
+!! test
+audioplay: no file attribute
+!! wikitext
+<audioplay/>
+!! html/php
+<p><strong class="error">audioplay: no file given</strong>
+</p>
+!! end
+
+!! test
+audioplay: file that does not exist
+!! wikitext
+<audioplay file="NoSuchClip.oga"/>
+!! html/php
+<p><strong class="error">audioplay: file not found</strong>
+</p>
+!! end
+
+!! test
+audioplay: file that is not audio
+!! wikitext
+<audioplay file="Foobar.jpg"/>
+!! html/php
+<p><strong class="error">audioplay: not an audio file</strong>
+</p>
+!! end
+
+!! test
+audioplay: icon only
+!! wikitext
+<audioplay file="Audio.oga"/>
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a></span>
+</p>
+!! end
+
+!! test
+audioplay: with a label
+!! wikitext
+<audioplay file="Audio.oga">dialling sound</audioplay>
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a><span class="mw-sgpack-audio-label">dialling sound</span></span>
+</p>
+!! end
+
+!! test
+audioplay: seek bar enabled per tag
+!! wikitext
+<audioplay file="Audio.oga" seek="yes">clip</audioplay>
+!! html/php
+<p><span class="mw-sgpack-audio mw-sgpack-audio-seekable"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="1"><span class="mw-sgpack-audio-icon"></span></a><input class="mw-sgpack-audio-seek" type="range" min="0" max="0" value="0" step="any" disabled="" aria-label="Audio position" /><span class="mw-sgpack-audio-label">clip</span></span>
+</p>
+!! end
+
+!! test
+audioplay: raw HTML in the label is escaped, not emitted
+!! wikitext
+<audioplay file="Audio.oga"><script>alert(1)</script></audioplay>
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a><span class="mw-sgpack-audio-label">&lt;script&gt;alert(1)&lt;/script&gt;</span></span>
+</p>
+!! end
+
+!! test
+audioplay: seek bar enabled wiki-wide by $wgSGPackAudioSeekBar
+!! config
+wgSGPackAudioSeekBar=true
+!! wikitext
+<audioplay file="Audio.oga"/>
+!! html/php
+<p><span class="mw-sgpack-audio mw-sgpack-audio-seekable"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="1"><span class="mw-sgpack-audio-icon"></span></a><input class="mw-sgpack-audio-seek" type="range" min="0" max="0" value="0" step="any" disabled="" aria-label="Audio position" /></span>
+</p>
+!! end
+
+!! test
+audioplay: seek="no" overrides the wiki-wide default
+!! config
+wgSGPackAudioSeekBar=true
+!! wikitext
+<audioplay file="Audio.oga" seek="no"/>
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a></span>
+</p>
+!! end
+
+# Template use is the case both attribute and content expansion were broken for:
+# setHook() hands the callback raw attribute text and raw tag content, so a
+# template passing file="{{{1}}}" arrived literally and had to be expanded
+# against the frame.
+!! article
+Template:Audioplay
+!! text
+<includeonly><audioplay file="{{{1|}}}" seek="{{{seek|}}}">{{{text|}}}</audioplay></includeonly>
+!! endarticle
+
+!! test
+audioplay: file name from a template parameter is expanded
+!! wikitext
+{{Audioplay|Audio.oga}}
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a></span>
+</p>
+!! end
+
+!! test
+audioplay: unset label parameter emits no label span
+!! wikitext
+{{Audioplay|Audio.oga|text=}}
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a></span>
+</p>
+!! end
+
+!! test
+audioplay: label from a template parameter is expanded
+!! wikitext
+{{Audioplay|Audio.oga|text=Kawoosh}}
+!! html/php
+<p><span class="mw-sgpack-audio"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="0"><span class="mw-sgpack-audio-icon"></span></a><span class="mw-sgpack-audio-label">Kawoosh</span></span>
+</p>
+!! end
+
+!! test
+audioplay: unset seek parameter falls back to the wiki default
+!! config
+wgSGPackAudioSeekBar=true
+!! wikitext
+{{Audioplay|Audio.oga}}
+!! html/php
+<p><span class="mw-sgpack-audio mw-sgpack-audio-seekable"><a class="mw-sgpack-audio-toggle" href="/wiki/File:Audio.oga" title="Play Audio.oga" aria-label="Play Audio.oga" data-mw-sgpack-audio-src="http://example.com/images/4/41/Audio.oga" data-mw-sgpack-audio-type="application/ogg" data-mw-sgpack-audio-name="Audio.oga" data-mw-sgpack-audio-seek="1"><span class="mw-sgpack-audio-icon"></span></a><input class="mw-sgpack-audio-seek" type="range" min="0" max="0" value="0" step="any" disabled="" aria-label="Audio position" /></span>
+</p>
+!! end

@@ -85,6 +85,21 @@
 			"styles": [
 				"ext.sgPack.sghtml.css"
 			]
+		},
+		"ext.sgPack.audio": {
+			"scripts": [
+				"ext.sgPack.audio.js"
+			],
+			"messages": [
+				"sgpack-audio-play",
+				"sgpack-audio-stop",
+				"sgpack-audio-unplayable"
+			]
+		},
+		"ext.sgPack.audio.styles": {
+			"styles": [
+				"ext.sgPack.audio.css"
+			]
 		}
 	},
 	"config_prefix": "wgSGPack",
@@ -101,6 +116,12 @@
 			"path": false,
 			"description": "The edit icon",
 			"descriptionmsg": "sgpack-image-edit-desc",
+			"public": true
+		},
+		"AudioSeekBar": {
+			"value": false,
+			"description": "Show a seek bar on inline <audioplay> controls. Off by default: a seek bar needs the clip duration up front, so each control fetches metadata on page load. Individual tags can override this with seek=\"yes\" or seek=\"no\".",
+			"descriptionmsg": "sgpack-audio-seekbar-desc",
 			"public": true
 		}
 	},

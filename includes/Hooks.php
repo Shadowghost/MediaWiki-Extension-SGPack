@@ -34,6 +34,7 @@ class Hooks implements
 		$parser->setHook( 'ddvalue', [ DDInsert::class, 'ddIValue' ] );
 		$parser->setHook( 'ddbutton', [ DDInsert::class, 'ddIButton' ] );
 		$parser->setHook( 'sort2', [ Sort2::class, 'sgPackRenderSort' ] );
+		$parser->setHook( 'audioplay', [ InlineAudio::class, 'renderTag' ] );
 		$parser->setFunctionHook( 'carray', [ CacheArray::class, 'sgPackCacheArray' ], Parser::SFH_NO_HASH );
 		$parser->setFunctionHook( 'keys', [ CacheArray::class, 'sgPackKeys' ], Parser::SFH_NO_HASH );
 		$parser->setFunctionHook( 'trim', [ ParserAdds::class, 'sgPackTrim' ], Parser::SFH_NO_HASH );

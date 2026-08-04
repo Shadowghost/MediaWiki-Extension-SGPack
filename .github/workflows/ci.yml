@@ -54,11 +54,11 @@ jobs:
   mediawiki:
     name: phan and parser tests (MediaWiki 1.43)
     runs-on: ubuntu-latest
-    # NOT VERIFIED. Unlike the two jobs above, this one was never executed while
-    # it was written — it needs a full MediaWiki checkout, which was not
-    # available. It is allowed to fail so it cannot block merges; run it once via
-    # workflow_dispatch, fix whatever it reports, then delete this line to make it
-    # a required check.
+    # The parser-test step below has been run for real against MediaWiki 1.43.9
+    # on a local SQLite wiki and passes 33/33. phan has never been run, and this
+    # job definition itself has never executed in GitHub Actions, so it stays
+    # non-blocking: trigger it once via workflow_dispatch, fix what phan reports,
+    # then delete this line to make it a required check.
     continue-on-error: true
     steps:
       - name: Checkout MediaWiki core

@@ -1,0 +1,136 @@
+/*
+ * Inline audio control for <audioplay>.
+ *
+ * The whole point of this feature is that it sits inside a line of prose without
+ * disturbing it, which is what `<audio controls>` could never do. Two rules keep
+ * that true and must not be relaxed:
+ *
+ *   - Every dimension is in `em`, so the control tracks the surrounding font size.
+ *   - Nothing has vertical padding and nothing exceeds 1em tall, so the line box
+ *     never grows.
+ *
+ * The glyphs are drawn from `currentColor`, so there are no image assets and dark
+ * mode needs no extra work.
+ */
+
+.mw-sgpack-audio {
+	white-space: nowrap;
+}
+
+/*
+ * The toggle must not take the skin's link colour.
+ *
+ * It is an <a> pointing at the file description page, and the glyph below is
+ * drawn in currentColor - so without this, :visited recolours the glyph and a
+ * played clip ends up a different colour from an unplayed one.
+ */
+.mw-sgpack-audio-toggle,
+.mw-sgpack-audio-toggle:link,
+.mw-sgpack-audio-toggle:visited,
+.mw-sgpack-audio-toggle:hover,
+.mw-sgpack-audio-toggle:focus,
+.mw-sgpack-audio-toggle:active {
+	color: inherit;
+	text-decoration: none;
+}
+
+/*
+ * inline-block with one explicit vertical-align, not inline-flex.
+ *
+ * An inline-flex box whose items are all centred has no baseline to share, so
+ * browsers synthesise one from its bottom margin edge and the control sits wrong
+ * against the text. Tuning vertical-align on the flex container only masks that;
+ * aligning a plain inline-block is predictable.
+ */
+.mw-sgpack-audio-icon {
+	display: inline-block;
+	width: 0.72em;
+	height: 0.72em;
+	/* `middle` aligns the box's midpoint with baseline + half the x-height, which
+	   is exactly "optically centred on lowercase text" - and it reads the real
+	   font metrics instead of assuming an x-height, so no magic number to retune
+	   per skin or font size. */
+	vertical-align: middle;
+	background-color: currentColor;
+	/* clip-path, not a border triangle: border diagonals get almost no
+	   antialiasing at this size and read as stepped/pixelated, whereas a clipped
+	   edge is smoothed. */
+	-webkit-clip-path: polygon( 0 0, 100% 50%, 0 100% );
+	clip-path: polygon( 0 0, 100% 50%, 0 100% );
+}
+
+/* Stop: the same box unclipped is a square */
+.mw-sgpack-audio-playing .mw-sgpack-audio-icon {
+	-webkit-clip-path: none;
+	clip-path: none;
+}
+
+/* Marked when the browser reports it cannot decode the file; the plain link is
+   left alone, so signal that rather than pretending to be a button. */
+.mw-sgpack-audio-unplayable .mw-sgpack-audio-icon {
+	opacity: 0.45;
+}
+
+/* No flex gap any more, so space the parts explicitly */
+.mw-sgpack-audio-label,
+.mw-sgpack-audio-seek {
+	margin-left: 0.3em;
+}
+
+/*
+ * Seek bar, only present when $wgSGPackAudioSeekBar or seek="yes" is set.
+ * Restyled from scratch: the native appearance is exactly the browser chrome this
+ * feature exists to avoid.
+ */
+.mw-sgpack-audio-seek {
+	display: inline-block;
+	width: 4em;
+	/* Must not exceed the icon height or the line box grows */
+	height: 0.8em;
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-right: 0;
+	padding: 0;
+	vertical-align: middle;
+	background-color: transparent;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.mw-sgpack-audio-seek:disabled {
+	opacity: 0.4;
+}
+
+.mw-sgpack-audio-seek::-webkit-slider-runnable-track {
+	height: 0.2em;
+	border-radius: 0.1em;
+	background-color: currentColor;
+	opacity: 0.3;
+}
+
+.mw-sgpack-audio-seek::-moz-range-track {
+	height: 0.2em;
+	border-radius: 0.1em;
+	background-color: currentColor;
+	opacity: 0.3;
+}
+
+.mw-sgpack-audio-seek::-webkit-slider-thumb {
+	width: 0.55em;
+	height: 0.55em;
+	/* Centre the thumb on the track */
+	margin-top: -0.18em;
+	border: 0;
+	border-radius: 50%;
+	background-color: currentColor;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.mw-sgpack-audio-seek::-moz-range-thumb {
+	width: 0.55em;
+	height: 0.55em;
+	border: 0;
+	border-radius: 50%;
+	background-color: currentColor;
+}
