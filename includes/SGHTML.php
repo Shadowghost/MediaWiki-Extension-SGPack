@@ -15,6 +15,16 @@ class SGHTML implements
 	BeforePageDisplayHook
 {
 	/**
+	 * Skins that do not get the heading edit icon and the jump-to-top link.
+	 *
+	 * Minerva Neue is what MobileFrontend switches to on mobile devices, so
+	 * naming it here is what excludes the mobile view; Citizen brings its own
+	 * heading and section-edit styling that these rules would fight with. Every
+	 * other skin still gets them.
+	 */
+	private const HEADING_ICON_SKIN_DENYLIST = [ 'minerva', 'citizen' ];
+
+	/**
 	 * Wrap a URL in a CSS url() value, escaped as a quoted CSS string.
 	 *
 	 * The icon paths are admin-controlled configuration rather than user input,
@@ -52,11 +62,9 @@ class SGHTML implements
 		// jump-to-top link is inserted by a small ResourceLoader module, which is
 		// the only part that needs an element to exist.
 		//
-		// Restricted to legacy Vector ('vector'; Vector 2022 reports
-		// 'vector-2022'), whose heading markup these rules were written for. Newer
-		// skins style .mw-editsection themselves and place the heading inside its
-		// own flex container, where a floated icon lands in the wrong place.
-		if ( $skin->getSkinName() === 'vector' ) {
+		// Skipped on the skins in HEADING_ICON_SKIN_DENYLIST, which style headings
+		// in a way these rules would fight with.
+		if ( !in_array( $skin->getSkinName(), self::HEADING_ICON_SKIN_DENYLIST, true ) ) {
 			$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
 			$out->addModules( 'ext.sgPack.sghtml' );
 
