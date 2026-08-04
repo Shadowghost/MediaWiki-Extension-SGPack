@@ -28,6 +28,14 @@ class ParserAdds {
 	public const USER_PARSER_OPTION = 'sgpack-userinfo-user';
 
 	/**
+	 * userinfo fields whose value differs between anonymous readers.
+	 *
+	 * For an anonymous user these all derive from the IP address, which is exactly
+	 * what the shared anonymous cache key cannot represent.
+	 */
+	private const ANON_VARYING_INFO = [ 'name', 'home', 'talk' ];
+
+	/**
 	 * @param Parser &$parser
 	 * @param string $rel
 	 * @param string $page
@@ -211,8 +219,20 @@ class ParserAdds {
 		// which is why this function used to render the wrong user's data.
 		$user = $services->getUserFactory()->newFromUserIdentity( $options->getUserIdentity() );
 
+		$arg = strtolower( $arg );
+
+		// All anonymous readers share one cache entry (see
+		// Hooks::onParserOptionsRegister), so a field derived from their IP address
+		// must not be stored in it — one reader would be served another's IP. Those
+		// fields opt this parse out of the cache instead. Everything else is
+		// identical across anonymous readers and stays cacheable: id is always 0,
+		// realname and email are empty, groups and skin come from the defaults.
+		if ( !$user->isRegistered() && in_array( $arg, self::ANON_VARYING_INFO, true ) ) {
+			$parser->getOutput()->updateCacheExpiry( 0 );
+		}
+
 		$back = '';
-		switch ( strtolower( $arg ) ) {
+		switch ( $arg ) {
 			case 'name':
 				$back = $user->getName();
 				break;

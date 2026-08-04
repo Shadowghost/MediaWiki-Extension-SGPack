@@ -201,3 +201,39 @@ b</sort2>y
 <p>xa,a,by
 </p>
 !! end
+
+!! test
+ddbutton: label and encoded payload
+!! wikitext
+<ddbutton>Insert</ddbutton>
+!! html/php
+<p><a class="mw-sgpack-ddinsert-button" href="#" data-mw-sgpack-insert="%49%6e%73%65%72%74%2b%2b">Insert</a>
+</p>
+!! end
+
+!! test
+ddbutton: show attribute replaces the label, payload still splits on +
+!! wikitext
+<ddbutton show="Label">a+b</ddbutton>
+!! html/php
+<p><a class="mw-sgpack-ddinsert-button" href="#" data-mw-sgpack-insert="%61%2b%62%2b">Label</a>
+</p>
+!! end
+
+!! test
+ddbutton: raw HTML in the label is escaped, not emitted
+!! wikitext
+<ddbutton><script>alert(1)</script></ddbutton>
+!! html/php
+<p><a class="mw-sgpack-ddinsert-button" href="#" data-mw-sgpack-insert="%3c%73%63%72%69%70%74%3e%61%6c%65%72%74%28%31%29%3c%2f%73%63%72%69%70%74%3e%2b%2b">&lt;script&gt;alert(1)&lt;/script&gt;</a>
+</p>
+!! end
+
+!! test
+jsbutton: no event-handler attributes are emitted
+!! wikitext
+<jsbutton>Go</jsbutton>
+!! html/php
+<p><button type="button" name="jsbutton" class="jsbutton">Go</button>
+</p>
+!! end

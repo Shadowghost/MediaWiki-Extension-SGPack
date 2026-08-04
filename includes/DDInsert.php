@@ -94,8 +94,17 @@ class DDInsert {
 	 * @return string
 	 */
 	public static function ddIButton( $input, $args, $parser, $frame ) {
-		// If no show parameter is given use input also as showText
-		$show = isset( $args['show'] ) ? htmlspecialchars( $args['show'] ) : $input;
+		// If no show parameter is given use input also as showText.
+		//
+		// $input must not reach the output raw: tag-hook return values are spliced
+		// into the page behind a strip marker and are never sanitised by MediaWiki,
+		// so <ddbutton><img src=x onerror=…></ddbutton> used to execute. Parsing it
+		// routes the markup through Sanitizer while still allowing wikitext in the
+		// label, which plain escaping would not. The insert payload below is built
+		// from the unparsed $input and is unaffected.
+		$show = isset( $args['show'] )
+			? htmlspecialchars( $args['show'] )
+			: $parser->recursiveTagParse( $input, $frame );
 		// Get sampleText if given
 		$sample = $args['sample'] ?? '';
 		// Picture
