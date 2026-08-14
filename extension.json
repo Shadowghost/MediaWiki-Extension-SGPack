@@ -100,6 +100,24 @@
 			"styles": [
 				"ext.sgPack.audio.css"
 			]
+		},
+		"ext.sgPack.slideshow": {
+			"scripts": [
+				"ext.sgPack.slideshow.js"
+			],
+			"messages": [
+				"sgpack-slideshow-prev",
+				"sgpack-slideshow-next",
+				"sgpack-slideshow-play",
+				"sgpack-slideshow-pause",
+				"sgpack-slideshow-enlarge",
+				"sgpack-slideshow-close"
+			]
+		},
+		"ext.sgPack.slideshow.styles": {
+			"styles": [
+				"ext.sgPack.slideshow.css"
+			]
 		}
 	},
 	"config_prefix": "wgSGPack",

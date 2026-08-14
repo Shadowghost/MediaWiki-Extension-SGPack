@@ -462,3 +462,66 @@ x<useredit><script>alert(1)</script></useredit>y
 <p>x<strong class="error">user statistics: unknown user &lt;script&gt;alert(1)&lt;/script&gt;</strong>y
 </p>
 !! end
+
+# <slideshow> cases. Only the paths that do not depend on an uploaded file are
+# covered: everything else renders a thumbnail URL and the dimensions of whatever
+# the parser-test image happens to be.
+#
+# The container is a block element, so unlike every other case in this file these
+# are not wrapped in a paragraph.
+!! test
+slideshow: no content at all
+!! wikitext
+x<slideshow/>y
+!! html/php
+<p>x<strong class="error">slideshow: no images given</strong>y
+</p>
+!! end
+
+!! test
+slideshow: only blank lines
+!! wikitext
+x<slideshow>
+
+</slideshow>y
+!! html/php
+<p>x<strong class="error">slideshow: no images given</strong>y
+</p>
+!! end
+
+# A file that has not been uploaded keeps its place in the sequence instead of
+# disappearing, so the captions still line up with what the editor wrote.
+!! test
+slideshow: files that do not exist
+!! wikitext
+<slideshow width="100" textheight="10" float="left">
+NoSuchImageHere.jpg|First
+AlsoMissing.png|Second
+</slideshow>
+!! html/php
+<div class="mw-sgpack-slideshow mw-sgpack-slideshow-float-left" style="width: 132px;" data-mw-sgpack-slideshow="{&quot;timeout&quot;:4000,&quot;speed&quot;:20,&quot;effect&quot;:&quot;none&quot;,&quot;random&quot;:false,&quot;autostart&quot;:true}"><div class="mw-sgpack-slideshow-frame" style="height: 89px;"><span class="mw-sgpack-slideshow-slide mw-sgpack-slideshow-current mw-sgpack-slideshow-missing">File:NoSuchImageHere.jpg</span><span class="mw-sgpack-slideshow-slide mw-sgpack-slideshow-missing">File:AlsoMissing.png</span></div><div class="mw-sgpack-slideshow-captions" style="height: 28px; line-height: 10px;"><p class="mw-sgpack-slideshow-caption mw-sgpack-slideshow-current">First</p><p class="mw-sgpack-slideshow-caption">Second</p></div></div>
+!! end
+
+# Attribute values that are not numbers fall back to the defaults rather than
+# erroring: they are presentation knobs, and a page full of red text helps nobody.
+!! test
+slideshow: unusable attribute values fall back to the defaults
+!! wikitext
+<slideshow width="wide" timeout="soon" effect="explode" float="middle">
+NoSuchImageHere.jpg
+</slideshow>
+!! html/php
+<div class="mw-sgpack-slideshow mw-sgpack-slideshow-float-none" style="width: 232px;" data-mw-sgpack-slideshow="{&quot;timeout&quot;:4000,&quot;speed&quot;:20,&quot;effect&quot;:&quot;none&quot;,&quot;random&quot;:false,&quot;autostart&quot;:true}"><div class="mw-sgpack-slideshow-frame" style="height: 145px;"><span class="mw-sgpack-slideshow-slide mw-sgpack-slideshow-current mw-sgpack-slideshow-missing">File:NoSuchImageHere.jpg</span></div><div class="mw-sgpack-slideshow-captions" style="height: 48px; line-height: 20px;"><p class="mw-sgpack-slideshow-caption mw-sgpack-slideshow-current"></p></div></div>
+!! end
+
+# Captions are wikitext, and the file name is not: parsing a name would hand back
+# HTML where a title is expected.
+!! test
+slideshow: captions are parsed as wikitext
+!! wikitext
+<slideshow>
+NoSuchImageHere.jpg|''Kursiv'' und [[Hala]]
+</slideshow>
+!! html/php
+<div class="mw-sgpack-slideshow mw-sgpack-slideshow-float-none" style="width: 232px;" data-mw-sgpack-slideshow="{&quot;timeout&quot;:4000,&quot;speed&quot;:20,&quot;effect&quot;:&quot;none&quot;,&quot;random&quot;:false,&quot;autostart&quot;:true}"><div class="mw-sgpack-slideshow-frame" style="height: 145px;"><span class="mw-sgpack-slideshow-slide mw-sgpack-slideshow-current mw-sgpack-slideshow-missing">File:NoSuchImageHere.jpg</span></div><div class="mw-sgpack-slideshow-captions" style="height: 48px; line-height: 20px;"><p class="mw-sgpack-slideshow-caption mw-sgpack-slideshow-current"><i>Kursiv</i> und <a href="/index.php?title=Hala&amp;action=edit&amp;redlink=1" class="new" title="Hala (page does not exist)">Hala</a></p></div></div>
+!! end

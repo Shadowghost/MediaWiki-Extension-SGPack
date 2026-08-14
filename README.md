@@ -9,6 +9,7 @@ This MediaWiki extension bundles additional functionality for [https://stargate-
 * Automatical loading of a template selector when creating new pages (namespace specific)
 * Inline HTML5 audio play button for audio files, sized to fit a line of text
 * User statistics (edit counts, page creations, first and last edit) usable in running text
+* Image slideshows with captions, floated beside the text
 
 ## Requirements
 
@@ -98,6 +99,34 @@ Five behavioural differences from the original are worth knowing:
   original disabled the parser cache for any page carrying a counter; set the value to `0` to get that back.
   Counts are therefore up to an hour stale by default, which is the trade for not re-running the queries on
   every view.
+
+### Slideshow
+
+`<slideshow>` puts a floating box of images with captions beside the text and cycles through them.
+
+```
+<slideshow width="200" speed="20" textheight="20" timeout="4000" effect="none" float="left">
+Andockklammern.JPG|Die Andockklammern, die die Prometheus festhalten.
+Dach Hangar.JPG|Das Hangardach öffnet sich.
+PrometheusStart.jpg|Prometheus startet.
+</slideshow>
+```
+
+Each line is `File name|caption`; the caption is optional and is parsed as wikitext, so links and formatting
+work. The `File:` prefix may be given or left out.
+
+| Attribute | Default | Purpose |
+|---|---|---|
+| `width` | `200` | Width of the images in pixels |
+| `textheight` | `20` | Line height of the caption area in pixels. The area is two lines tall; `0` removes it |
+| `timeout` | `4000` | Milliseconds a slide stays up. `0` shows the first image and waits for the reader |
+| `speed` | `20` | Milliseconds a transition takes. Only used by `effect="fade"` |
+| `effect` | `none` | `none` or `fade` |
+| `float` | none | `left` or `right`; anything else leaves the box in the text flow |
+| `random` | `0` | `1` shuffles the order on every page view |
+| `autostart` | `1` | `0` starts paused |
+
+Both the box width and the frame height are fixed, computed from `width` and the tallest image, so advancing a slide never reflows the article around it. Captions longer than the caption area are clipped.
 
 ## Upgrading
 

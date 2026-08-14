@@ -4,7 +4,7 @@
 			"Shadowghost"
 		]
 	},
-	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Extnds the parser with <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> and <code>#in</code>.<br/>• <b>DDInsert</b>: Insert text and pictures with buttons, text or dropdown list. Create JSButton<br/>• <b>NewArticle</b>: Select article template when creating a new article.<br/>• <b>AddWhosOnline</b>: Remove user from WhosOnline when logged out, add entry to personal menu.<br/>• <b>CacheArray</b>: Array function for templates - uses cache for speed.• <b>Sort2</b>: Create sorted lists.<br/>• <b>UserStatistics</b>: Edit counts, page creation counts and first/last edit dates inside running text.",
+	"sgpack-desc": "<h5>Stargate Wiki Extension Pack</h5>• Extnds the parser with <code>trim</code>,<code>userinfo</code>,<code>#recursiv</code>,<code>#tocmod</code> and <code>#in</code>.<br/>• <b>DDInsert</b>: Insert text and pictures with buttons, text or dropdown list. Create JSButton<br/>• <b>NewArticle</b>: Select article template when creating a new article.<br/>• <b>AddWhosOnline</b>: Remove user from WhosOnline when logged out, add entry to personal menu.<br/>• <b>CacheArray</b>: Array function for templates - uses cache for speed.• <b>Sort2</b>: Create sorted lists.<br/>• <b>UserStatistics</b>: Edit counts, page creation counts and first/last edit dates inside running text.<br/>• <b>Slideshow</b>: Cycle through several images with captions in a floating box.",
 	"sgpack-image-edit-desc": "The edit icon",
 	"sgpack-image-top-desc": "The icon for getting to the top of the site",
 	"sgpack-audio-seekbar-desc": "Whether inline audio controls show a seek bar",
@@ -19,6 +19,13 @@
 	"sgpack-audio-nofile": "audioplay: no file given",
 	"sgpack-audio-notfound": "audioplay: file not found",
 	"sgpack-audio-notaudio": "audioplay: not an audio file",
+	"sgpack-slideshow-noimages": "slideshow: no images given",
+	"sgpack-slideshow-prev": "Previous image",
+	"sgpack-slideshow-next": "Next image",
+	"sgpack-slideshow-play": "Play slideshow",
+	"sgpack-slideshow-pause": "Pause slideshow",
+	"sgpack-slideshow-enlarge": "Show at full size",
+	"sgpack-slideshow-close": "Close",
 	"sghtml-top": "Back to top",
 	"ddinsert-selecttitle": "[ select ]",
 	"newarticle-selecttitle": "[ select ]",

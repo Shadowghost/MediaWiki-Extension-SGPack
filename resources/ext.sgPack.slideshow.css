@@ -1,0 +1,270 @@
+/*
+ * Image slideshow for <slideshow>.
+ *
+ * The box has a fixed width and a fixed frame height, both written into the markup
+ * by Slideshow.php, because the slides are stacked on top of each other and an
+ * auto-height container would collapse. Everything else lives here.
+ *
+ * Colours are drawn from `currentColor` and translucent greys rather than fixed
+ * values, so the box works in the light and the dark theme without a second set of
+ * rules.
+ */
+
+.mw-sgpack-slideshow {
+	position: relative;
+	margin-bottom: 0.5em;
+}
+
+/*
+ * `clear` in the direction the box floats.
+ *
+ * Two slideshows in consecutive sections otherwise stack against each other's side
+ * and end up halfway down a paragraph. stargate-wiki.de patched this from
+ * MediaWiki:Common.js; it belongs with the feature.
+ */
+.mw-sgpack-slideshow-float-left {
+	float: left;
+	clear: left;
+	margin-right: 1em;
+}
+
+.mw-sgpack-slideshow-float-right {
+	float: right;
+	clear: right;
+	margin-left: 1em;
+}
+
+/*
+ * border-box, and the 15px padding plus 1px border are what Slideshow.php's
+ * FRAME_CHROME adds to the width and height it emits. Keep the two in step.
+ */
+.mw-sgpack-slideshow-frame {
+	position: relative;
+	box-sizing: border-box;
+	padding: 15px;
+	border: 1px solid rgba( 128, 128, 128, 0.4 );
+	background-color: rgba( 128, 128, 128, 0.08 );
+	overflow: hidden;
+}
+
+/*
+ * Absolutely positioned children are laid out against the padding box, so `inset: 0`
+ * already keeps the image clear of the padding.
+ */
+.mw-sgpack-slideshow-slide {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+}
+
+.mw-sgpack-slideshow-slide.mw-sgpack-slideshow-current {
+	display: flex;
+}
+
+.mw-sgpack-slideshow-slide img {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+}
+
+/* A file that is not uploaded yet still occupies its turn, rather than vanishing */
+.mw-sgpack-slideshow-missing {
+	padding: 0 0.5em;
+	color: #d33;
+	font-size: 0.85em;
+	text-align: center;
+	word-break: break-word;
+}
+
+/*
+ * Crossfade, only when effect="fade" was asked for. The duration comes from the
+ * `speed` attribute and is set on the container as a custom property, because it
+ * varies per slideshow.
+ */
+.mw-sgpack-slideshow-fade .mw-sgpack-slideshow-slide {
+	display: flex;
+	opacity: 0;
+	transition: opacity var( --sgpack-slideshow-speed, 0ms ) ease-in-out;
+	pointer-events: none;
+}
+
+.mw-sgpack-slideshow-fade .mw-sgpack-slideshow-slide.mw-sgpack-slideshow-current {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/*
+ * The caption area is a fixed two lines tall, so that advancing a slide never moves
+ * the surrounding text. Captions longer than that are clipped, which is what the
+ * previous implementation did and what the captions on the wiki were written for.
+ */
+.mw-sgpack-slideshow-captions {
+	position: relative;
+	overflow: hidden;
+	font-size: 0.85em;
+}
+
+.mw-sgpack-slideshow-caption {
+	display: none;
+	margin: 0;
+}
+
+.mw-sgpack-slideshow-caption.mw-sgpack-slideshow-current {
+	display: block;
+}
+
+/*
+ * Controls sit on top of the image and stay out of the way until the reader points
+ * at the box or tabs into it. `visibility` as well as `opacity`, so they are not a
+ * keyboard trap while invisible.
+ */
+.mw-sgpack-slideshow-controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	gap: 0.2em;
+	padding: 0.25em;
+	border: 1px solid rgba( 128, 128, 128, 0.4 );
+	background-color: rgba( 255, 255, 204, 0.92 );
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 150ms ease-in-out;
+}
+
+.mw-sgpack-slideshow:hover .mw-sgpack-slideshow-controls,
+.mw-sgpack-slideshow:focus-within .mw-sgpack-slideshow-controls {
+	opacity: 1;
+	visibility: visible;
+}
+
+.mw-sgpack-slideshow-button {
+	display: block;
+	width: 1.4em;
+	height: 1.4em;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #202122;
+	cursor: pointer;
+}
+
+.mw-sgpack-slideshow-button:hover {
+	color: #3366cc;
+}
+
+/*
+ * The glyphs are clipped boxes rather than border triangles: border diagonals get
+ * almost no antialiasing at this size, whereas a clipped edge is smoothed.
+ */
+.mw-sgpack-slideshow-button::before {
+	content: '';
+	display: block;
+	width: 0.8em;
+	height: 0.8em;
+	margin: 0 auto;
+	background-color: currentColor;
+}
+
+.mw-sgpack-slideshow-button-prev::before {
+	-webkit-clip-path: polygon( 100% 0, 0 50%, 100% 100% );
+	clip-path: polygon( 100% 0, 0 50%, 100% 100% );
+}
+
+.mw-sgpack-slideshow-button-next::before,
+.mw-sgpack-slideshow-button-toggle::before {
+	-webkit-clip-path: polygon( 0 0, 100% 50%, 0 100% );
+	clip-path: polygon( 0 0, 100% 50%, 0 100% );
+}
+
+/* Pause: two bars, drawn as gradients so no second element is needed */
+.mw-sgpack-slideshow-button-toggle.mw-sgpack-slideshow-playing::before {
+	background-image: linear-gradient( currentColor, currentColor ), linear-gradient( currentColor, currentColor );
+	background-repeat: no-repeat;
+	background-position: 0 0, 100% 0;
+	background-size: 35% 100%;
+	background-color: transparent;
+	-webkit-clip-path: none;
+	clip-path: none;
+}
+
+/* Enlarge: an empty frame, i.e. "show this at full size" */
+.mw-sgpack-slideshow-button-enlarge::before {
+	box-sizing: border-box;
+	border: 0.14em solid currentColor;
+	background-color: transparent;
+}
+
+/*
+ * Enlarged view. One dialog is created per page and reused, so these rules are not
+ * scoped to a slideshow.
+ */
+.mw-sgpack-slideshow-dialog {
+	max-width: 92vw;
+	max-height: 92vh;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	overflow: visible;
+}
+
+.mw-sgpack-slideshow-dialog::backdrop {
+	background-color: rgba( 0, 0, 0, 0.75 );
+}
+
+.mw-sgpack-slideshow-dialog-image {
+	display: block;
+	max-width: 92vw;
+	max-height: 92vh;
+	width: auto;
+	height: auto;
+}
+
+.mw-sgpack-slideshow-dialog-close {
+	position: absolute;
+	top: -0.6em;
+	right: -0.6em;
+	width: 1.8em;
+	height: 1.8em;
+	padding: 0;
+	border: 1px solid rgba( 128, 128, 128, 0.6 );
+	border-radius: 50%;
+	background-color: #fff;
+	color: #202122;
+	cursor: pointer;
+}
+
+/* An X, clipped from two crossed bars */
+.mw-sgpack-slideshow-dialog-close::before,
+.mw-sgpack-slideshow-dialog-close::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 25%;
+	width: 50%;
+	height: 0.13em;
+	margin-top: -0.065em;
+	background-color: currentColor;
+}
+
+.mw-sgpack-slideshow-dialog-close::before {
+	transform: rotate( 45deg );
+}
+
+.mw-sgpack-slideshow-dialog-close::after {
+	transform: rotate( -45deg );
+}
+
+/* On paper there is only ever one slide, and nothing to press */
+@media print {
+	.mw-sgpack-slideshow-controls {
+		display: none;
+	}
+}

@@ -36,6 +36,7 @@ class Hooks implements
 		$parser->setHook( 'ddbutton', [ DDInsert::class, 'ddIButton' ] );
 		$parser->setHook( 'sort2', [ Sort2::class, 'sgPackRenderSort' ] );
 		$parser->setHook( 'audioplay', [ InlineAudio::class, 'renderTag' ] );
+		$parser->setHook( 'slideshow', [ Slideshow::class, 'renderTag' ] );
 		$parser->setHook( 'useredit', [ UserStatistics::class, 'renderUserEdit' ] );
 		$parser->setHook( 'usercreate', [ UserStatistics::class, 'renderUserCreate' ] );
 		$parser->setHook( 'useredittopten', [ UserStatistics::class, 'renderTopEditors' ] );
