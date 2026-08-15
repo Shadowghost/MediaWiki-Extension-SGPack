@@ -30,6 +30,33 @@ wfLoadExtension( 'SGPack' );
 | `$wgSGPackAudioSeekBar` | `false` | Show a seek bar on inline audio controls |
 | `$wgSGPackUserStatisticsCacheExpiry` | `3600` | Seconds a page showing user statistics may stay in the parser cache; `0` never caches it |
 
+### Sorted lists
+
+`<sort2>` sorts the lines of its content and renders them as a list.
+
+```
+<sort2 type="inline" separator="&sp;|&sp;">
+2. Sacrifice Moon
+1. Trial by Fire
+</sort2>
+```
+
+| Attribute | Default | Purpose |
+|---|---|---|
+| `order` | `asc` | `asc`, `desc` or `none` |
+| `type` | `ul` | `ul`, `ol`, `dl`, `br` or `inline` |
+| `separator` | — | String between the entries. Only used by `type="inline"` |
+| `casesense` | `false` | `true` sorts upper and lower case separately |
+| `start` | — | First number of an `ol` |
+| `title` | — | Text put in front of the list |
+| `style` | — | CSS for the list element, filtered by MediaWiki's CSS sanitizer |
+
+**Write a space in `separator` and `title` as `&sp;`.** MediaWiki collapses and strips the whitespace of every
+tag attribute before an extension sees it, so `separator=" | "` arrives as `|` and the entries end up jammed
+together. `&sp;` is not an HTML entity, survives that step and is turned into a space by the extension;
+`&ensp;`, `&nbsp;` and a literal `&#8194;` work too, because they decode to characters that are not ASCII
+whitespace.
+
 ### Inline audio
 
 `<audioplay>` renders a small play/stop control that sits on the text baseline, instead of the browser's own

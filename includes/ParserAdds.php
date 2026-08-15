@@ -340,11 +340,29 @@ class ParserAdds {
 
 		$output = '';
 
-		// Text aufspalten in geklammerte und nicht geklammerte Teile, Elemente in [[]] werden nicht beachtet
-		$split = preg_split( '/(\[\[.*?\]\]|\(.*?\))/i', $text, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
+		// Text aufspalten in geklammerte und nicht geklammerte Teile. Ein Link zählt
+		// samt der direkt anschließenden Buchstaben als ein Stück ([[Olesianer]]in),
+		// sonst würde die Endung als eigenes Kürzel behandelt.
+		$split = preg_split(
+			'/(\[\[.*?\]\]\p{L}*|\(.*?\))/u',
+			$text,
+			-1,
+			PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+		);
+		if ( $split === false ) {
+			// Ungültiges UTF-8: unverändert durchreichen statt abzubrechen
+			return [ $text, 'noparse' => false ];
+		}
 
 		// Alle Elemente parsen
 		foreach ( $split as $para ) {
+			// Links werden nicht beachtet, also unverändert übernommen und nicht an
+			// die Vorlage übergeben
+			if ( str_starts_with( $para, '[[' ) ) {
+				$output .= $para;
+				continue;
+			}
+
 			if ( $para[0] == '(' && $para[strlen( $para ) - 1] == ')' ) {
 				// "Ausklammern"
 				$sub = substr( $para, 1, strlen( $para ) - 2 );
@@ -352,9 +370,15 @@ class ParserAdds {
 				$sub = $para;
 			}
 
-			// Erzeuge Anfrage
-			$ask = '{{' . $calltemplate . '|' . $sub . $callparameter . '}}';
-			$result = $parser->recursiveTagParse( $ask );
+			// Erzeuge Anfrage. "=" und "|" im Text würden die Parameterliste der
+			// Vorlage verschieben - aus {{V|a<span style="x">|k}} würde ein
+			// benannter Parameter und "k" rutschte auf Position 1.
+			$ask = '{{' . $calltemplate . '|' . self::escapeTemplateArg( $sub ) . $callparameter . '}}';
+
+			// Nur expandieren statt zu parsen: verglichen wird mit dem unveränderten
+			// Wikitext, und der ist kein HTML. recursiveTagParse() lieferte für jedes
+			// Stück mit Markup ein Ergebnis, das nie gleich der Eingabe sein konnte.
+			$result = trim( $parser->replaceVariables( $ask ) );
 
 			// Wenn Ergebnis == leer oder == Anfrage dann kennt die Vorlage den Parameter nicht
 			// Leerzeichen werden nicht zurückgegeben
@@ -368,5 +392,20 @@ class ParserAdds {
 		}
 
 		return [ $output, 'noparse' => false ];
+	}
+
+	/**
+	 * "=" und "|" in einem Textstück maskieren, damit es als ein Parameter bei der
+	 * aufgerufenen Vorlage ankommt.
+	 *
+	 * {{=}} und {{!}} sind Magic Words des Kerns und werden erst nach dem Aufteilen
+	 * der Parameter ersetzt, die Vorlage sieht also wieder das Originalzeichen.
+	 *
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	private static function escapeTemplateArg( $text ) {
+		return strtr( $text, [ '=' => '{{=}}', '|' => '{{!}}' ] );
 	}
 }

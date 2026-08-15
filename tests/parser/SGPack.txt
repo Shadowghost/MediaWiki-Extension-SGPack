@@ -77,6 +77,82 @@ x{{trim: spaced }}y
 </p>
 !! end
 
+# Fixtures for #recursiv. SGPackEcho stands for a template that does not know
+# the expression it is handed and returns it unchanged; SGPackMark stands for
+# one that does.
+
+!! article
+Template:SGPackEcho
+!! text
+{{{1|}}}
+!! endarticle
+
+!! article
+Template:SGPackMark
+!! text
+Marker
+!! endarticle
+
+!! article
+Olesianer
+!! text
+Ein Volk.
+!! endarticle
+
+!! test
+#recursiv: a parenthesised expression is handed to the template
+!! wikitext
+x{{#recursiv:SGPackMark|(a)}}y
+!! html/php
+<p>xMarkery
+</p>
+!! end
+
+!! test
+#recursiv: an expression the template does not know is kept unchanged
+!! wikitext
+x{{#recursiv:SGPackEcho|a b|k}}y
+!! html/php
+<p>xa by
+</p>
+!! end
+
+!! test
+#recursiv: an equals sign does not shift the template parameters
+!! wikitext
+x{{#recursiv:SGPackEcho|a = b|k}}y
+!! html/php
+<p>xa = by
+</p>
+!! end
+
+!! test
+#recursiv: a pipe does not shift the template parameters
+!! wikitext
+x{{#recursiv:SGPackEcho|a {{!}} b|k}}y
+!! html/php
+<p>xa | by
+</p>
+!! end
+
+!! test
+#recursiv: a link and the word it carries are not handed to the template
+!! wikitext
+x{{#recursiv:SGPackMark|[[Olesianer]]in}}y
+!! html/php
+<p>x<a href="/wiki/Olesianer" title="Olesianer">Olesianerin</a>y
+</p>
+!! end
+
+!! test
+#recursiv: text around a link is still handed to the template
+!! wikitext
+x{{#recursiv:SGPackMark|a [[Olesianer]] b}}y
+!! html/php
+<p>xMarker<a href="/wiki/Olesianer" title="Olesianer">Olesianer</a>Markery
+</p>
+!! end
+
 !! test
 carray: write then read a key
 !! wikitext
