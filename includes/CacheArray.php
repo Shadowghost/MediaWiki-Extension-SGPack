@@ -8,7 +8,7 @@
 
 namespace MediaWiki\Extension\SGPack;
 
-use MediaWiki\Content\ContentHandler;
+use MediaWiki\Content\TextContent;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
@@ -133,10 +133,10 @@ class CacheArray {
 					// If carray is already set do not read it again (cache!)
 					if ( !isset( $cache[$cnumber] ) ) {
 						$revisionRecord = $wikiPage->getRevisionRecord();
-						$text = $revisionRecord ? $revisionRecord->getContent( SlotRecord::MAIN ) : null;
-						if ( $text ) {
-							$content = ContentHandler::getContentText( $text );
-							$cont = explode( '|', $content );
+						$content = $revisionRecord ? $revisionRecord->getContent( SlotRecord::MAIN ) : null;
+						// ContentHandler::getContentText() was removed in 1.45
+						if ( $content instanceof TextContent ) {
+							$cont = explode( '|', $content->getText() );
 							foreach ( $cont as $line ) {
 								$sp = explode( '=', $line, 2 );
 								if ( count( $sp ) == 2 ) {

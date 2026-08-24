@@ -92,15 +92,19 @@ class NewArticle implements
 				$html = '';
 				$idNr = 0;
 				// Seite parsen
-				$text = $parser->parse(
+				$parserOptions = ParserOptions::newFromUser( $output->getUser() );
+				$parserOutput = $parser->parse(
 					$content->getText(),
 					$page->getTitle(),
-					ParserOptions::newFromUser( $output->getUser() )
+					$parserOptions
 				);
+				$parsedText = $parserOutput
+					->runOutputPipeline( $parserOptions )
+					->getContentHolderText();
 				// Definition der Auswahlliste(n) herrauslösen
 				$teile = preg_split(
 					'/(\[\[\[.*?\]\]\])/s',
-					$text->getText(),
+					$parsedText,
 					-1,
 					PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
 				);
