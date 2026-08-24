@@ -2,9 +2,22 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    # Every branch, not just main: the five-version mediawiki matrix is the check that
+    # decides whether a change is safe, and waiting for a pull request to learn that
+    # means finding out after the work is finished. '**' matches branch names with
+    # slashes in them, which '*' does not. Tags are deliberately left out.
+    branches: [ '**' ]
   pull_request:
   workflow_dispatch:
+
+# A branch push and a pull request from that same branch would otherwise queue the
+# nine-job matrix twice. github.head_ref is set only for pull_request events and holds
+# the source branch, so both events land in the same group and the newer run cancels the
+# older one. Pushes to main are exempt from the cancelling: that history is the record of
+# what passed, and a run killed by the next push proves nothing.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
