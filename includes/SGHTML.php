@@ -8,7 +8,7 @@
 
 namespace MediaWiki\Extension\SGPack;
 
-use MediaWiki\Hook\BeforePageDisplayHook;
+use MediaWiki\Output\Hook\BeforePageDisplayHook;
 use MediaWiki\Output\OutputPage;
 
 class SGHTML implements
