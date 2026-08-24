@@ -140,7 +140,7 @@ x{{#recursiv:SGPackEcho|a {{!}} b|k}}y
 !! wikitext
 x{{#recursiv:SGPackMark|[[Olesianer]]in}}y
 !! html/php
-<p>x<a href="/wiki/Olesianer" title="Olesianer">Olesianerin</a>y
+<p>x<a href="/wiki/Olesianer" title="Olesianer">Olesianeriny</a>
 </p>
 !! end
 
