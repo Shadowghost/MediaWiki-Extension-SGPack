@@ -494,9 +494,11 @@ class UserStatistics {
 			->fetchResultSet();
 
 		$userPages = [];
+		$userTalkPages = [];
 		$names = [];
 		foreach ( $rows as $row ) {
 			$userPages[$row->user_name] = Title::makeTitle( NS_USER, $row->user_name );
+			$userTalkPages[$row->user_name] = Title::makeTitle( NS_USER_TALK, $row->user_name );
 			$names[$row->user_name] = (int)$row->user_editcount;
 		}
 
@@ -507,9 +509,9 @@ class UserStatistics {
 		// One existence query for the whole list instead of two per entry, which at
 		// the maximum length would be a thousand of them
 		$linkBatch = $services->getLinkBatchFactory()->newLinkBatch();
-		foreach ( $userPages as $userPage ) {
+		foreach ( $userPages as $name => $userPage ) {
 			$linkBatch->addObj( $userPage );
-			$linkBatch->addObj( $userPage->getTalkPage() );
+			$linkBatch->addObj( $userTalkPages[$name] );
 		}
 		$linkBatch->setCaller( __METHOD__ );
 		$linkBatch->execute();
@@ -525,7 +527,7 @@ class UserStatistics {
 		foreach ( $names as $name => $editCount ) {
 			$userPage = $userPages[$name];
 			$links = $linkRenderer->makeLink( $userPage, (string)$name )
-				. ' (' . $linkRenderer->makeLink( $userPage->getTalkPage(), $talkLabel )
+				. ' (' . $linkRenderer->makeLink( $userTalkPages[$name], $talkLabel )
 				. ' | ' . $linkRenderer->makeKnownLink(
 					SpecialPage::getTitleFor( 'Contributions', (string)$name ),
 					$contribsLabel
