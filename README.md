@@ -13,7 +13,9 @@ This MediaWiki extension bundles additional functionality for [https://stargate-
 
 ## Requirements
 
-MediaWiki 1.43 or later, and PHP 8.1 or later.
+MediaWiki 1.43 or later, and PHP 8.1 or later. Continuous integration runs the static analysis and the parser
+tests against 1.43, 1.44, 1.45, 1.46 and 1.47. Note that MediaWiki itself requires PHP 8.2 from 1.45 and PHP
+8.3 from 1.46, so the 8.1 floor only applies on 1.43 and 1.44.
 
 ## Installation
 
