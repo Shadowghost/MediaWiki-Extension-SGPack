@@ -153,55 +153,70 @@ x{{#recursiv:SGPackMark|a [[Olesianer]] b}}y
 </p>
 !! end
 
+# A data page for the carray lookup. Note the last entry: fr reads the page's *raw*
+# wikitext through TextContent::getText(), so <includeonly> markers are literal text and
+# a closing tag on its own line would end up inside the last value. Vorlage:EpName/Zuordnung
+# on stargate-wiki.de solves it exactly this way - a throwaway "noinclude" key whose value
+# is the closing tag - and this fixture copies that so it stays faithful to production.
+!! article
+Vorlage:SGPackDaten
+!! text
+<includeonly>
+| #default = unbekannt: {{K}}
+| SG1_1x01 = Das Tor zum Universum
+| SG1_1x01/1 = Das Tor zum Universum, Teil 1
+| noinclude = </includeonly>
+!! endarticle
+
 !! test
-carray: write then read a key
+carray: fr reads a key out of a data page
 !! wikitext
-x{{carray:1|w|a=1|b=2}}{{carray:1|r|b}}y
+x{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01}}y
 !! html/php
-<p>x2y
+<p>xDas Tor zum Universumy
 </p>
 !! end
 
 !! test
-carray: #default is used for a missing key
+carray: fr falls back to the data page's #default, with {{K}} replaced
 !! wikitext
-x{{carray:2|w|a=1|#default=none}}{{carray:2|r|zz}}y
+x{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_9x99}}y
 !! html/php
-<p>xnoney
+<p>xunbekannt: SG1_9x99y
 </p>
 !! end
 
 !! test
-carray: readwrite writes and reads in one call
+carray: a key containing a slash survives the lookup
 !! wikitext
-x{{carray:3|rw|b|a=1|b=2}}y
+x{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01/1}}y
 !! html/php
-<p>x2y
+<p>xDas Tor zum Universum, Teil 1y
 </p>
 !! end
 
 !! test
-carray: count
+carray: two lookups in one parse agree, the second served from the memo
 !! wikitext
-x{{carray:4|w|a=1|b=2}}{{carray:4|c}}y
+x{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01}}|{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01}}y
 !! html/php
-<p>x2y
+<p>xDas Tor zum Universum|Das Tor zum Universumy
 </p>
 !! end
 
 !! test
-carray: count of an unset carray is 0, not a fatal
+carray: order does not matter - the lookup is the same wherever it sits
 !! wikitext
-x{{carray:5|c}}y
+x{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01/1}}{{carray:Ep|fr|Vorlage:SGPackDaten|SG1_1x01}}y
 !! html/php
-<p>x0y
+<p>xDas Tor zum Universum, Teil 1Das Tor zum Universumy
 </p>
 !! end
 
 !! test
-carray: delete
+carray: a data page that does not exist is an empty source, not a fatal
 !! wikitext
-x{{carray:6|w|a=1}}{{carray:6|d}}{{carray:6|u}}y
+x{{carray:Nope|fr|Vorlage:SGPackKeineSolcheSeite|k}}y
 !! html/php
 <p>xy
 </p>

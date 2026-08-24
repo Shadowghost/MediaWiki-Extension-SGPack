@@ -14,14 +14,50 @@ use MediaWiki\Parser\Parser;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
 
+/**
+ * Look a key up in a data page, and build the composite keys to look it up with.
+ *
+ * `{{carray:BUCKET|fr|Data page|KEY}}` reads a page of `| key = value` lines and
+ * returns one value, falling back to that page's own `#default` with `{{K}}` replaced
+ * by the key that missed. `{{keys:u:a|b}}` joins parts into `A_B`. On this wiki the
+ * pair is the episode-title table: `Vorlage:EpName/Zuordnung` holds the codes, and
+ * `Vorlage:EpName`, `Vorlage:Ep` and `Vorlage:EpLink` read it - several hundred pages
+ * of episode links between them.
+ *
+ * ## Why the write/read actions are gone
+ *
+ * This function used to double as a mutable per-parse store: `w`/`write` put values in,
+ * `r`/`read` took one out further down the page, plus `rw`, `d`/`delete`, `c`/`count`
+ * and `u`/`used`. Those made the result depend on **where in the page the call sat** -
+ * a write had to be expanded before the read consuming it. Parsoid does not promise
+ * that expansion order, which is the same reason `Extension:Variables` has no Parsoid
+ * module and is being taken out of this wiki's templates. Scoping the store to
+ * ParserOutput fixed leakage *between* parses; it could not fix an order dependency
+ * *inside* one, and nothing can.
+ *
+ * A sweep of all 20,877 pages found no production caller for any of them - the only
+ * page using them was the feature's own documentation, `Benutzer:Rene/SGPack`, which
+ * now describes an API that is gone.
+ *
+ * What is left is a **pure function**: the value depends on the data page and the key,
+ * never on call order, so it holds under either parser. Parser functions also need no
+ * Parsoid extension module - Parsoid expands them through core's preprocessor - so
+ * this needed no port, just the removal of the half that could never have had one. The
+ * memoisation stays, because caching a page read is an optimisation, not a semantic.
+ */
 class CacheArray {
 
 	/**
-	 * ParserOutput extension-data key the carrays are stored under.
+	 * ParserOutput extension-data key the parsed data pages are memoised under.
 	 *
-	 * Scoping the store to the ParserOutput ties it to the parse that created it,
-	 * so carrays cannot leak between unrelated parses sharing one PHP process
-	 * such as job runners and API batch parses.
+	 * This is a cache and nothing else: the value a lookup returns is decided by the
+	 * data page and the key alone, never by what a previous call did. That is what
+	 * makes the function safe under Parsoid, which does not promise the expansion
+	 * order the removed write/read actions depended on - see the class docblock.
+	 *
+	 * Scoping it to the ParserOutput ties it to the parse that created it, so nothing
+	 * leaks between unrelated parses sharing one PHP process such as job runners and
+	 * API batch parses.
 	 */
 	private const EXT_DATA_KEY = 'sgpack-carray';
 
@@ -163,66 +199,6 @@ class CacheArray {
 					$output = $cache[$cnumber][$key];
 				} elseif ( isset( $cache[$cnumber]['#default'] ) ) {
 					$output = str_replace( '{{K}}', $key, $cache[$cnumber]['#default'] );
-				}
-				break;
-			// w/write only create a new carray; rw/readwrite also read one value
-			case 'w':
-			case 'write':
-			case 'rw':
-			case 'readwrite':
-				// Read key (only if readwrite)
-				if ( ( $action === 'rw' ) || ( $action === 'readwrite' ) ) {
-					$key = trim( next( $param ) );
-				}
-				// If carray is already set do not read it again (cache!)
-				if ( !isset( $cache[$cnumber] ) ) {
-					// Read the keys and values and save in carray
-					// Note: a falsy parameter ends the loop, as it always has
-					$values = next( $param );
-					while ( $values ) {
-						$sp = explode( '=', $values, 2 );
-						if ( count( $sp ) == 2 ) {
-							$cache[$cnumber][trim( $sp[0] )] = trim( $sp[1] );
-						}
-						$values = next( $param );
-					}
-				}
-				// Leave switch (only if write)
-				if ( ( $action === 'w' ) || ( $action === 'write' ) ) {
-					break;
-				}
-				// Fall through: rw/readwrite writes the carray and then reads one value
-			// Read value out of carray
-			case 'r':
-			case 'read':
-				// Read key, if not already set by action readwrite
-				if ( !isset( $key ) ) {
-					$key = trim( next( $param ) );
-				}
-				// Read cache, if no value, look for default
-				if ( isset( $cache[$cnumber][$key] ) ) {
-					$output = $cache[$cnumber][$key];
-				} elseif ( isset( $cache[$cnumber]['#default'] ) ) {
-					$output = str_replace( '{{K}}', $key, $cache[$cnumber]['#default'] );
-				}
-				break;
-			// Delete carray
-			case 'd':
-			case 'delete':
-				unset( $cache[$cnumber] );
-				break;
-			// Count elements in carray
-			case 'c':
-			case 'count':
-				// count( null ) is a TypeError on PHP 8, so an unset carray counts as 0
-				$output = isset( $cache[$cnumber] ) ? count( $cache[$cnumber] ) : 0;
-				break;
-			// Test if cache is used
-			case 'u':
-			case 'used':
-				// If carray is used give size
-				if ( isset( $cache[$cnumber] ) ) {
-					$output = count( $cache[$cnumber] );
 				}
 				break;
 		}
