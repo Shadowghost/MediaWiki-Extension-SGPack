@@ -10,6 +10,7 @@ namespace MediaWiki\Extension\SGPack;
 
 use MediaWiki\Content\TextContent;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Parser\Parser;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
 
@@ -79,17 +80,19 @@ class CacheArray {
 	}
 
 	/**
+	 * Declared rather than read out of func_get_args() so Phan can type it.
+	 *
+	 * @param Parser $parser
+	 *
 	 * @return array
 	 */
-	public static function sgPackCacheArray() {
+	public static function sgPackCacheArray( $parser ) {
 		// Minimum parser, cachenumber and action are needed
 		if ( func_num_args() < 3 ) {
 			return [ '', 'noparse' => true ];
 		}
 
-		// Get the parser parameter
 		$param = func_get_args();
-		$parser = $param[0];
 		$parserOutput = $parser->getOutput();
 
 		// Get the first two wiki-parameters (chachenumber, action)
