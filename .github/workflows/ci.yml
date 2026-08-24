@@ -10,14 +10,33 @@ permissions:
   contents: read
 
 jobs:
+  syntax:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.1', '8.2' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Lint sources
+        run: |
+          find . -path ./vendor -prune -o -path ./node_modules -prune -o \
+            -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+
   php:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # MediaWiki 1.43 supports PHP 8.1 to 8.3; composer.json requires >= 8.1.
-        php: [ '8.1', '8.2', '8.3' ]
+        php: [ '8.3', '8.4', '8.5' ]
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +49,6 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
-      # parallel-lint + minus-x + phpcs + the standalone structure tests.
       - name: composer test
         run: composer test
 
@@ -47,31 +65,34 @@ jobs:
 
       - run: npm ci
 
-      # eslint + tsc --noEmit over resources/ + banana
       - name: npm test
         run: npm test
 
   mediawiki:
-    name: phan and parser tests (MediaWiki 1.43)
+    name: MediaWiki ${{ matrix.mw }} (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
-    # Both steps below pass locally against MediaWiki 1.43.9 on a SQLite wiki.
-    # This job definition itself (core checkout, SQLite install, MW_INSTALL_PATH
-    # wiring) has not yet run under GitHub Actions, so it stays non-blocking for
-    # one run: trigger it via workflow_dispatch, fix any plumbing it reports, then
-    # delete this line to make it a required check.
-    #
-    # The PHP version here matters. Phan 5.5.2 and mediawiki/phan-taint-check-plugin
-    # are not PHP 8.5 compatible: Phan installs an error handler that turns any
-    # deprecation into a crash, both emit 8.5 deprecations, and that handler
-    # ignores error_reporting. Keep this on a version MediaWiki 1.43 supports
-    # (8.1-8.3).
-    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mw: REL1_43
+            php: '8.3'
+          - mw: REL1_44
+            php: '8.3'
+          - mw: REL1_45
+            php: '8.3'
+          - mw: REL1_46
+            php: '8.3'
+          - mw: master
+            php: '8.4'
+            experimental: true
+    continue-on-error: ${{ matrix.experimental || false }}
     steps:
       - name: Checkout MediaWiki core
         uses: actions/checkout@v4
         with:
           repository: wikimedia/mediawiki
-          ref: REL1_43
+          ref: ${{ matrix.mw }}
           path: mediawiki
 
       - name: Checkout SGPack
@@ -81,11 +102,9 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php }}
           coverage: none
           tools: composer:v2
-          # phan needs php-ast, which is not present in most environments; this
-          # is the reason the plan wanted phan run in CI rather than locally.
           extensions: ast, mbstring, intl, calendar
 
       - name: Install MediaWiki dependencies
@@ -95,6 +114,12 @@ jobs:
       - name: Install SGPack dependencies
         working-directory: mediawiki/extensions/SGPack
         run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: phan
+        working-directory: mediawiki/extensions/SGPack
+        env:
+          MW_INSTALL_PATH: ${{ github.workspace }}/mediawiki
+        run: composer phan
 
       - name: Install a SQLite wiki with SGPack enabled
         working-directory: mediawiki
@@ -106,17 +131,12 @@ jobs:
             --scriptpath="" \
             --pass=ExamplePassword123 \
             TestWiki AdminUser
-          echo "wfLoadExtension( 'SGPack' );" >> LocalSettings.php
-          php maintenance/update.php --quick
+          {
+            echo "wfLoadExtension( 'SGPack' );"
+            echo "\$wgDevelopmentWarnings = true;"
+          } >> LocalSettings.php
+          php maintenance/run.php update --quick
 
-      - name: phan
-        working-directory: mediawiki/extensions/SGPack
-        env:
-          MW_INSTALL_PATH: ${{ github.workspace }}/mediawiki
-        run: composer phan
-
-      # Parser tests live in tests/parser/ and are auto-discovered by
-      # ParserTestRunner::getParserTestFiles() for every registered extension.
       - name: Parser tests
         working-directory: mediawiki
         run: php tests/parser/parserTests.php --file=extensions/SGPack/tests/parser/SGPack.txt
