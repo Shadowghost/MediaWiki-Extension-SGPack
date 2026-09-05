@@ -64,7 +64,10 @@ class SGHTML implements
 		//
 		// Skipped on the skins in HEADING_ICON_SKIN_DENYLIST, which style headings
 		// in a way these rules would fight with.
-		if ( !in_array( $skin->getSkinName(), self::HEADING_ICON_SKIN_DENYLIST, true ) ) {
+		if (
+			!$title->isSpecialPage()
+			&& !in_array( $skin->getSkinName(), self::HEADING_ICON_SKIN_DENYLIST, true )
+		) {
 			$out->addModuleStyles( 'ext.sgPack.sghtml.styles' );
 			$out->addModules( 'ext.sgPack.sghtml' );
 
